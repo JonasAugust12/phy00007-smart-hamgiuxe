@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "author": "Nguyễn Hoàng Khải Minh",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-breadboard-half", "id": "bb1", "top": -70.2, "left": 358, "attrs": {} },
+    { "type": "wokwi-arduino-uno", "id": "uno", "top": 0.6, "left": -0.6, "attrs": {} },
+    { "type": "chip-md0370", "id": "chip1", "top": 241.02, "left": 446.4, "attrs": {} },
+    { "type": "chip-md0370", "id": "chip2", "top": 173.82, "left": 446.4, "attrs": {} },
+    { "type": "chip-md0370", "id": "chip3", "top": 241.02, "left": 619.2, "attrs": {} },
+    { "type": "wokwi-rgb-led", "id": "rgb1", "top": -111.2, "left": 202.7, "attrs": {} },
+    { "type": "wokwi-rgb-led", "id": "rgb2", "top": -111.2, "left": 154.7, "attrs": {} },
+    { "type": "wokwi-rgb-led", "id": "rgb3", "top": -111.2, "left": 106.7, "attrs": {} },
+    {
+      "id": "serial",
+      "type": "wokwi-serial-port",
+      "attrs": { "baud": "9600" }
+    }
+  ],
+  "connections": [
+    [ "uno:2", "chip1:IN", "green", [ "v-28.2", "h51.5", "v259.2", "h-28.8", "v9.6" ] ],
+    [ "uno:5V", "bb1:bp.1", "red", [ "v48.5", "h195.2", "v-124.8" ] ],
+    [ "uno:GND.2", "bb1:bn.1", "black", [ "v38.9", "h176.1", "v-105.6" ] ],
+    [ "chip1:VCC", "bb1:bp.2", "red", [ "h0" ] ],
+    [ "chip1:GND", "bb1:bn.3", "black", [ "h0" ] ],
+    [ "chip2:VCC", "bb1:bp.4", "red", [ "h0" ] ],
+    [ "chip2:GND", "bb1:bn.5", "black", [ "h0" ] ],
+    [ "chip3:VCC", "bb1:bp.16", "red", [ "h0" ] ],
+    [ "chip3:GND", "bb1:bn.17", "black", [ "h0" ] ],
+    [ "chip2:OUT", "uno:2", "green", [ "h-211.2" ] ],
+    [ "rgb1:COM", "bb1:bp.6", "green", [ "v28.4", "h182.5" ] ],
+    [ "rgb1:R", "uno:5", "green", [ "v0" ] ],
+    [ "rgb1:G", "uno:3", "green", [ "v0" ] ],
+    [ "uno:4", "chip1:OUT", "green", [ "v0" ] ],
+    [ "rgb2:R", "uno:9", "green", [ "v0" ] ],
+    [ "rgb2:G", "uno:6", "green", [ "v19.2", "h20.5" ] ],
+    [ "rgb2:COM", "bb1:bp.7", "green", [ "v18.8", "h288.1" ] ],
+    [ "rgb3:R", "uno:11", "green", [ "v38.4", "h28.8" ] ],
+    [ "rgb3:G", "uno:10", "green", [ "v28.8", "h20.5" ] ],
+    [ "rgb3:COM", "bb1:bp.5", "green", [ "v38", "h305.7" ] ],
+    [ "chip3:OUT", "uno:7", "green", [ "h-57.6", "v19.2", "h-374.4" ] ],
+     ["uno:1","serial:RX","",[]],    
+     ["uno:0","serial:TX","",[]]
+  ],
+  "dependencies": {}
+}
