@@ -192,9 +192,10 @@ main {
 
 .device {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 3.2rem;
-    width: 100%;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10rem;
+    width: 80%;
+    margin: 0 auto;
 }
 
 .device-detail {
@@ -202,10 +203,10 @@ main {
     align-items: center;
     overflow: hidden;
     border-radius: 5.5px;
-    min-height: 11.5rem;
-    padding: 20px;
+    min-height: 9rem;
+    padding: 15px;
     box-sizing: border-box;
-    box-shadow: 0 1px 2.94px .06px #041a3729;
+    box-shadow: 0 1px 2.94px 0.06px #041a3729;
     background-color: var(--primary-color);
 }
 
@@ -261,8 +262,8 @@ main {
 
 .specifications {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 3rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8rem;
     width: 100%;
 }
 
@@ -282,7 +283,7 @@ main {
     display: block;
     margin-bottom: 0 0 20px 0;
     font-weight: 700;
-    font-size: 1.5rem;
+    font-size: 2rem;
     cursor: default;
 }
 
@@ -293,12 +294,12 @@ main {
 }
 
 .data-container svg {
-    width: 3rem;
-    height: 3rem;
+    width: 5rem;
+    height: 5rem;
 }
 
 .data-value {
-    font-size: 2.5rem;
+    font-size: 3rem;
     font-weight: 800;
 }
 

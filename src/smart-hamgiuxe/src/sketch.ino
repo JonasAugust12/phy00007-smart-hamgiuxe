@@ -14,7 +14,7 @@ int button = 35;
 int led = 18;
 int buzzer = 5;
 int fire_relay = 17;
-int smoke_sensor = 19;
+int smoke_sensor = 25;
 
 LiquidCrystal_I2C LCD = LiquidCrystal_I2C(0x27, 16, 2);
 String receivedMessage = "";
@@ -52,6 +52,7 @@ void setup()
   LCD.clear();
 }
 
+// GATE SYSTEM
 const unsigned long passingTimeout = 5000;
 
 unsigned long startPassingTime = 0;
@@ -66,10 +67,27 @@ bool isOutSensorExist = false;
 
 int slotLeft = 10;
 
+// FIRE PROTECTION SYSTEM
+#define SMOKE_THRESHOLD 2047
+#define TEMPERATURE_THRESHOLD 70
+const float BETA = 3950;
+
+bool isFireDetected = false;
+bool isSmokeDetected = false;
+bool isEmergencyPressed = false;
+
+unsigned long pressTime = 0;
+unsigned long ledActiveTime = 0;
+unsigned long previousMillis = 0;
+const long interval = 50;
+int freq = 1000;
+bool holdButton = false;
+
 void loop()
 {
   handleGateFlow(in_trig, in_echo, isGateInOpened, isInSensorExist, isPassing, startPassingTime, "Entry");
   handleGateFlow(out_trig, out_echo, isGateOutOpened, isOutSensorExist, isPassingOut, startPassingOutTime, "Exit");
+  handleFireProtection();
 
   LCD.setCursor(0, 0);
   LCD.print("    WELCOME!    ");
@@ -149,4 +167,100 @@ long getDistance(int trig, int echo)
   long duration = pulseIn(echo, HIGH);
   long distance_cm = duration * 0.034 / 2;
   return distance_cm;
+}
+
+void handleFireProtection()
+{
+  float temperture = getTemperature(temp_sensor);
+  int smokeValue = analogRead(smoke_sensor);
+  int buttonState = digitalRead(button);
+
+  if (buttonState == HIGH && !holdButton)
+  {
+    pressTime = millis();
+    holdButton = true;
+  }
+  if (buttonState == LOW && holdButton)
+  {
+    holdButton = false;
+    if (millis() - pressTime >= 2000)
+    {
+      ledActiveTime = millis();
+      isEmergencyPressed = !isEmergencyPressed;
+    }
+  }
+
+  if (smokeValue > SMOKE_THRESHOLD)
+  {
+    isSmokeDetected = true;
+  }
+  else
+  {
+    isSmokeDetected = false;
+    isFireDetected = false;
+  }
+
+  if (isSmokeDetected && temperture > TEMPERATURE_THRESHOLD)
+  {
+    isFireDetected = true;
+  }
+  else
+  {
+    isFireDetected = false;
+  }
+
+  if (isSmokeDetected || isEmergencyPressed)
+  {
+    activateAlarm();
+  }
+  else
+  {
+    deactivateAlarm();
+  }
+
+  if (isFireDetected)
+  {
+    digitalWrite(fire_relay, HIGH);
+  }
+  else
+  {
+    digitalWrite(fire_relay, LOW);
+  }
+}
+
+float getTemperature(int temp_sensor)
+{
+  int analogValue = analogRead(temp_sensor);
+  float celsius = 1 / (log(1 / (4095. / analogValue - 1)) / BETA + 1.0 / 298.15) - 273.15;
+  return celsius;
+}
+
+void activateAlarm()
+{
+  unsigned long currentMillis = millis();
+
+  if (currentMillis - previousMillis >= interval)
+  {
+    previousMillis = currentMillis;
+
+    freq += 50;
+    if (freq >= 1500)
+    {
+      freq = 1000;
+    }
+
+    tone(buzzer, freq);
+  }
+
+  if (currentMillis - ledActiveTime >= 500)
+  {
+    digitalWrite(led, !digitalRead(led));
+    ledActiveTime = currentMillis;
+  }
+}
+
+void deactivateAlarm()
+{
+  digitalWrite(led, LOW);
+  noTone(buzzer);
 }
