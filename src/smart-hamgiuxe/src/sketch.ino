@@ -1,5 +1,6 @@
 #include <ESP32Servo.h>
 #include <LiquidCrystal_I2C.h>
+#include <string>
 
 // GATE
 int in_trig = 33;
@@ -17,8 +18,18 @@ int fire_relay = 17;
 int smoke_sensor = 25;
 
 LiquidCrystal_I2C LCD = LiquidCrystal_I2C(0x27, 16, 2);
-String receivedMessage = "";
+
 Servo servo;
+#define SERVO_TIMER_GROUP 1  // Sử dụng timer group 1
+
+void setupServoTimer() {
+    // Cấu hình ESP32Servo để sử dụng timer cụ thể
+    ESP32PWM::allocateTimer(SERVO_TIMER_GROUP);
+    
+    // Thiết lập thông số cho servo
+    servo.setPeriodHertz(50);      // Tần số tiêu chuẩn cho servo là 50Hz
+    servo.attach(servo_pin, 500, 2400);  // Thiết lập min/max pulse width
+}
 
 void setup()
 {
@@ -34,7 +45,8 @@ void setup()
   pinMode(in_echo, INPUT);
   pinMode(out_trig, OUTPUT);
   pinMode(out_echo, INPUT);
-  servo.attach(servo_pin, 500, 2400);
+  
+  setupServoTimer();
 
   // FIRE
   pinMode(temp_sensor, INPUT);
@@ -53,7 +65,7 @@ void setup()
 }
 
 // GATE SYSTEM
-const unsigned long passingTimeout = 5000;
+const unsigned long passingTimeout = 3000;
 
 unsigned long startPassingTime = 0;
 bool isGateInOpened = false;
@@ -64,8 +76,6 @@ unsigned long startPassingOutTime = 0;
 bool isGateOutOpened = false;
 bool isPassingOut = false;
 bool isOutSensorExist = false;
-
-int slotLeft = 10;
 
 // FIRE PROTECTION SYSTEM
 #define SMOKE_THRESHOLD 2047
@@ -83,11 +93,17 @@ const long interval = 50;
 int freq = 1000;
 bool holdButton = false;
 
+// PARKING LOT
+String receivedMessage = "";
+int slotLeft = 3;
+
 void loop()
 {
+  setupServoTimer();
   handleGateFlow(in_trig, in_echo, isGateInOpened, isInSensorExist, isPassing, startPassingTime, "Entry");
   handleGateFlow(out_trig, out_echo, isGateOutOpened, isOutSensorExist, isPassingOut, startPassingOutTime, "Exit");
   handleFireProtection();
+  handleParkingLot();
 
   LCD.setCursor(0, 0);
   LCD.print("    WELCOME!    ");
@@ -175,18 +191,11 @@ void handleFireProtection()
   int smokeValue = analogRead(smoke_sensor);
   int buttonState = digitalRead(button);
 
-  if (buttonState == HIGH && !holdButton)
-  {
-    pressTime = millis();
-    holdButton = true;
-  }
-  if (buttonState == LOW && holdButton)
-  {
-    holdButton = false;
-    if (millis() - pressTime >= 2000)
-    {
-      ledActiveTime = millis();
+  while(buttonState == HIGH){
+    if (digitalRead(button) == LOW){
       isEmergencyPressed = !isEmergencyPressed;
+      ledActiveTime = millis();
+      break;
     }
   }
 
@@ -238,7 +247,6 @@ float getTemperature(int temp_sensor)
 void activateAlarm()
 {
   unsigned long currentMillis = millis();
-
   if (currentMillis - previousMillis >= interval)
   {
     previousMillis = currentMillis;
@@ -263,4 +271,31 @@ void deactivateAlarm()
 {
   digitalWrite(led, LOW);
   noTone(buzzer);
+}
+
+// PARKING LOT SYSTEM
+void handleParkingLot() {
+  while (Serial.available() > 0) {
+    char incomingChar = Serial.read();  // Read each character from the buffer
+    
+    if (incomingChar == '\n') {  // Check if the user pressed Enter (new line character)
+      // Print the message
+      Serial.println(receivedMessage);
+      std::string message = receivedMessage.c_str();
+      if (message.find("IN") != -1) {
+        if (slotLeft > 0) {
+          slotLeft--;
+        }
+      } else if (message.find("OUT") != -1) {
+        if (slotLeft < 3) {
+          slotLeft++;
+        }
+      }
+      // Clear the message buffer for the next input
+      receivedMessage = "";
+    } else {
+      // Append the character to the message string
+      receivedMessage += incomingChar;
+    }
+  }
 }

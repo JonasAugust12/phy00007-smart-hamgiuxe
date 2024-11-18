@@ -12,10 +12,13 @@
     { "type": "wokwi-rgb-led", "id": "rgb2", "top": -111.2, "left": 154.7, "attrs": {} },
     { "type": "wokwi-rgb-led", "id": "rgb3", "top": -111.2, "left": 106.7, "attrs": {} },
     {
-      "id": "serial",
       "type": "wokwi-serial-port",
+      "id": "serial",
+      "top": 0,
+      "left": 0,
       "attrs": { "baud": "9600" }
-    }
+    },
+    { "type": "wokwi-ds1307", "id": "rtc1", "top": 119.4, "left": 796.9, "attrs": {} }
   ],
   "connections": [
     [ "uno:2", "chip1:IN", "green", [ "v-28.2", "h51.5", "v259.2", "h-28.8", "v9.6" ] ],
@@ -39,8 +42,12 @@
     [ "rgb3:G", "uno:10", "green", [ "v28.8", "h20.5" ] ],
     [ "rgb3:COM", "bb1:bp.5", "green", [ "v38", "h305.7" ] ],
     [ "chip3:OUT", "uno:7", "green", [ "h-57.6", "v19.2", "h-374.4" ] ],
-     ["uno:1","serial:RX","",[]],    
-     ["uno:0","serial:TX","",[]]
+    [ "uno:1", "serial:RX", "", [] ],
+    [ "uno:0", "serial:TX", "", [] ],
+    [ "rtc1:GND", "bb1:bn.25", "black", [ "h0" ] ],
+    [ "rtc1:5V", "bb1:bp.25", "red", [ "h0" ] ],
+    [ "rtc1:SDA", "uno:A4", "green", [ "h-48", "v153.3", "h-508.8" ] ],
+    [ "rtc1:SCL", "uno:A5", "green", [ "h-38.4", "v153.4", "h-508.8" ] ]
   ],
   "dependencies": {}
 }
