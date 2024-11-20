@@ -120,7 +120,6 @@
     [ "bb1:13b.j", "esp:18", "gold", [ "v105.6", "h-259.2" ] ],
     [ "bb1:29t.b", "esp:35", "yellow", [ "v-76.8", "h-374.4" ] ],
     [ "ultrasonic1:ECHO", "esp:34", "magenta", [ "v28.8", "h-116" ] ],
-    [ "ultrasonic2:ECHO", "esp:VN", "magenta", [ "v48", "h-0.8" ] ],
     [ "ultrasonic1:TRIG", "esp:33", "cyan", [ "v19.2", "h-259.6" ] ],
     [ "ntc1:OUT", "esp:32", "limegreen", [ "h-19.2", "v-95.9", "h-796.8", "v86.4" ] ],
     [ "ultrasonic2:TRIG", "esp:23", "cyan", [ "v38.4", "h-576.4", "v240", "h9.6" ] ],
@@ -128,6 +127,7 @@
     [ "gnd1:GND", "relay1:NO", "black", [ "v0" ] ],
     [ "led2:A", "vcc1:VCC", "green", [ "v0" ] ],
     [ "ntc1:VCC", "bb1:bp.50", "red", [ "h-19.2", "v87.3" ] ],
+    [ "chip1:AO", "esp:VP", "magenta", [ "h-24", "v-181.38", "h-825.6" ] ],
     [ "led1:A", "bb1:7b.f", "", [ "$bb" ] ],
     [ "led1:C", "bb1:6b.f", "", [ "$bb" ] ],
     [ "r2:1", "bb1:7b.g", "", [ "$bb" ] ],
@@ -139,7 +139,8 @@
     [ "btn1:1.r", "bb1:29b.h", "", [ "$bb" ] ],
     [ "btn1:2.r", "bb1:27b.h", "", [ "$bb" ] ],
     [ "r1:1", "bb1:29t.a", "", [ "$bb" ] ],
-    [ "chip1:AO", "esp:25", "magenta", [ "h-24", "v-181.38", "h-825.6" ] ]
+    [ "r1:2", "bb1:35t.a", "", [ "$bb" ] ],
+    [ "ultrasonic2:ECHO", "esp:VN", "magenta", [ "v48", "h-375.2" ] ]
   ],
   "dependencies": {}
 }

@@ -1,6 +1,19 @@
 #include <ESP32Servo.h>
 #include <LiquidCrystal_I2C.h>
+#include <WiFi.h>
+#include <PubSubClient.h>
 #include <string>
+
+// WIFI
+const char *ssid = "Wokwi-GUEST";
+const char *password = "";
+
+// MQTT BROKER
+const char *mqtt_broker = "broker.emqx.io";
+const char *mqtt_topic = "smart-parking-system";
+const char *mqtt_username = "sps";
+const char *mqtt_password = "spspwd";
+const int mqtt_port = 1883;
 
 // GATE
 int in_trig = 33;
@@ -15,37 +28,100 @@ int button = 35;
 int led = 18;
 int buzzer = 5;
 int fire_relay = 17;
-int smoke_sensor = 25;
+int smoke_sensor = 36;
 
 LiquidCrystal_I2C LCD = LiquidCrystal_I2C(0x27, 16, 2);
 
 Servo servo;
-#define SERVO_TIMER_GROUP 1  // Sử dụng timer group 1
+#define SERVO_TIMER_GROUP 1 // Sử dụng timer group 1
 
-void setupServoTimer() {
-    // Cấu hình ESP32Servo để sử dụng timer cụ thể
-    ESP32PWM::allocateTimer(SERVO_TIMER_GROUP);
-    
-    // Thiết lập thông số cho servo
-    servo.setPeriodHertz(50);      // Tần số tiêu chuẩn cho servo là 50Hz
-    servo.attach(servo_pin, 500, 2400);  // Thiết lập min/max pulse width
+WiFiClient espClient;
+PubSubClient client(espClient);
+
+void setupWifi()
+{
+  delay(10);
+  Serial.println("Connecting to WiFi...");
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.println(".");
+  }
+  Serial.println("Connected to WiFi");
+}
+
+void connectToMQTT()
+{
+  while (!client.connected())
+  {
+    String client_id = "esp32-client-" + String(WiFi.macAddress());
+    Serial.printf("Connecting to MQTT Broker as %s.....\n", client_id.c_str());
+    if (client.connect(client_id.c_str(), mqtt_username, mqtt_password))
+    {
+      Serial.println("Connected to MQTT broker");
+      client.subscribe(mqtt_topic);
+      client.publish(mqtt_topic, "Hello from ESP32");
+    }
+    else
+    {
+      Serial.print("Failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 2 seconds");
+      delay(2000);
+    }
+  }
+}
+
+void mqttCallback(char *mqtt_topic, byte *payload, unsigned int length)
+{
+  Serial.print("Message received on mqtt_topic: ");
+  Serial.println(mqtt_topic);
+  Serial.print("Message: ");
+  for (unsigned int i = 0; i < length; i++)
+  {
+    Serial.print((char)payload[i]);
+  }
+  Serial.println("\n-----------------------");
+}
+
+void setupServoTimer()
+{
+  // Cấu hình ESP32Servo để sử dụng timer cụ thể
+  ESP32PWM::allocateTimer(SERVO_TIMER_GROUP);
+
+  // Thiết lập thông số cho servo
+  servo.setPeriodHertz(50);           // Tần số tiêu chuẩn cho servo là 50Hz
+  servo.attach(servo_pin, 500, 2400); // Thiết lập min/max pulse width
 }
 
 void setup()
 {
   // put your setup code here, to run once:
-  // Serial.begin(115200);
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("Hello, ESP32!");
   LCD.init();
   LCD.backlight();
+
+  // WIFI & MQTT
+  setupWifi();
+  client.setServer(mqtt_broker, mqtt_port);
+  client.setKeepAlive(60);
+  client.setCallback(mqttCallback);
+  while (!client.connected())
+  {
+    connectToMQTT();
+  }
+  client.subscribe(mqtt_topic);
+  client.publish(mqtt_topic, "Hello from ESP32");
 
   // GATE
   pinMode(in_trig, OUTPUT);
   pinMode(in_echo, INPUT);
   pinMode(out_trig, OUTPUT);
   pinMode(out_echo, INPUT);
-  
+
   setupServoTimer();
 
   // FIRE
@@ -99,6 +175,8 @@ int slotLeft = 3;
 
 void loop()
 {
+  client.loop();
+
   setupServoTimer();
   handleGateFlow(in_trig, in_echo, isGateInOpened, isInSensorExist, isPassing, startPassingTime, "Entry");
   handleGateFlow(out_trig, out_echo, isGateOutOpened, isOutSensorExist, isPassingOut, startPassingOutTime, "Exit");
@@ -110,6 +188,15 @@ void loop()
   LCD.setCursor(0, 1);
   LCD.print("Slot Left: ");
   LCD.print(slotLeft);
+
+  String payload = "Slot Left: " + String(slotLeft);
+  static String lastPayload = "";
+
+  if (payload != lastPayload)
+  {
+    client.publish(mqtt_topic, payload.c_str());
+    lastPayload = payload;
+  }
 
   delay(100);
 }
@@ -191,8 +278,10 @@ void handleFireProtection()
   int smokeValue = analogRead(smoke_sensor);
   int buttonState = digitalRead(button);
 
-  while(buttonState == HIGH){
-    if (digitalRead(button) == LOW){
+  while (buttonState == HIGH)
+  {
+    if (digitalRead(button) == LOW)
+    {
       isEmergencyPressed = !isEmergencyPressed;
       ledActiveTime = millis();
       break;
@@ -274,26 +363,36 @@ void deactivateAlarm()
 }
 
 // PARKING LOT SYSTEM
-void handleParkingLot() {
-  while (Serial.available() > 0) {
-    char incomingChar = Serial.read();  // Read each character from the buffer
-    
-    if (incomingChar == '\n') {  // Check if the user pressed Enter (new line character)
+void handleParkingLot()
+{
+  while (Serial.available() > 0)
+  {
+    char incomingChar = Serial.read(); // Read each character from the buffer
+
+    if (incomingChar == '\n')
+    { // Check if the user pressed Enter (new line character)
       // Print the message
       Serial.println(receivedMessage);
       std::string message = receivedMessage.c_str();
-      if (message.find("IN") != -1) {
-        if (slotLeft > 0) {
+      if (message.find("IN") != -1)
+      {
+        if (slotLeft > 0)
+        {
           slotLeft--;
         }
-      } else if (message.find("OUT") != -1) {
-        if (slotLeft < 3) {
+      }
+      else if (message.find("OUT") != -1)
+      {
+        if (slotLeft < 3)
+        {
           slotLeft++;
         }
       }
       // Clear the message buffer for the next input
       receivedMessage = "";
-    } else {
+    }
+    else
+    {
       // Append the character to the message string
       receivedMessage += incomingChar;
     }
