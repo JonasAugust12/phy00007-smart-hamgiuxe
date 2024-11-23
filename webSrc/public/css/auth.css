@@ -12,7 +12,7 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: url('../img/pexels-photo-1756957.webp') no-repeat;
+    background: url('../img/auth-background.jpg') no-repeat;
     background-size: cover;
 }
 
@@ -31,6 +31,15 @@ body {
     font-size: 36px;
     text-align: center;
     cursor: default;
+    user-select: none;
+}
+
+.wrapper p {
+    font-size: 16px;
+    margin: 10px 0 30px;
+    color: rgba(235, 232, 232, 0.774);
+    text-align: center;
+    user-select: none;
 }
 
 .wrapper .input-box {
@@ -83,6 +92,7 @@ body {
     font-size: 16px;
     color: #333;
     font-weight: 600;
+    user-select: none;
 }
 
 .wrapper .register-link {

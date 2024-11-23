@@ -13,15 +13,15 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Kodchasan:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,200;1,300;1,400;1,500;1,600;1,700&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
         rel="stylesheet">
-    <link rel="icon" href="./assets/img/favicon.png" type="image/png">
-    <link rel="stylesheet" href="./assets/css/style.css">
+    <link rel="icon" href="../img/favicon.png" type="image/png">
+    <link rel="stylesheet" href="../css/style.css">
 </head>
 
 <body>
     <div class="container">
         <nav>
-            <a href="#" class="logo">
-                <img src="./assets/img/logo.png" alt="logo">
+            <a href="../index.html" class="logo">
+                <img src="../img/logo.png" alt="logo">
             </a>
             <div class="utilities">
                 <div class="utilities-btn full-screen">
@@ -48,7 +48,7 @@
                     </a>
                 </div>
                 <div class="utilities-avatar">
-                    <img src="./assets/img/avatar.jpg" alt="avatar">
+                    <img src="../img/avatar.jpg" alt="avatar">
                 </div>
             </div>
         </nav>
@@ -56,7 +56,7 @@
             <div class="side-bar">
                 <div class="user-info">
                     <div class="user-info__avatar">
-                        <img src="./assets/img/avatar.jpg" alt="avatar">
+                        <img src="../img/avatar.jpg" alt="avatar">
                     </div>
                     <div class="user-info__info">
                         <p>Welcome,</p>
@@ -68,7 +68,7 @@
                     <div class="menu">menu</div>
                     <ul>
                         <li class="side-bar-dashboard">
-                            <a href="./index.html">
+                            <a href="../index.html">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                                     <path fill="#fff"
                                         d="M4 13h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1zm-1 7a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v4zm10 0a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-7a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v7zm1-10h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1z">
@@ -78,7 +78,7 @@
                             </a>
                         </li>
                         <li class="side-bar-parkinglog">
-                            <a href="./parkinglog.html">
+                            <a href="#">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                                     <path fill="#fff"
                                         d="M3 19.723V21a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h12v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1.277A1.99 1.99 0 0 0 22 18v-3c0-.831-.507-1.542-1.228-1.845l-1.368-4.104A2.995 2.995 0 0 0 16.559 7H7.441a2.995 2.995 0 0 0-2.845 2.051l-1.368 4.104A2.001 2.001 0 0 0 2 15v3c0 .738.404 1.376 1 1.723zM5.5 18a1.5 1.5 0 1 1 .001-3.001A1.5 1.5 0 0 1 5.5 18zm13 0a1.5 1.5 0 1 1 .001-3.001A1.5 1.5 0 0 1 18.5 18zM7.441 9h9.117a1 1 0 0 1 .949.684L18.613 13H5.387l1.105-3.316c.137-.409.519-.684.949-.684z">
@@ -260,7 +260,10 @@
                         <li class="pagination-prev">&lt;</li>
                         <li class="pagination-btn">1</li>
                         <li class="pagination-btn">2</li>
-                        <li class="pagination-btn">...</li>
+                        <li class="pagination-btn">
+                            ...
+                            <input type="number" class="input-page">
+                        </li>
                         <li class="pagination-btn">10</li>
                         <li class="pagination-next">&gt;</li>
                     </ul>

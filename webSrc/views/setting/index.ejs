@@ -1,0 +1,78 @@
+<div class="setting">
+    <div class="setting-item">
+        <div class="setting-text">
+            <p class="setting-title">Emergency Alert for Phone</p>
+            <p class="setting-description">When the sensor detects a fire or flood</p>
+        </div>
+        <div class="setting-action">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#28a745" style="cursor: not-allowed; opacity: 0.5;">
+                <path d="M10 15.17L19.19 5.98l1.41 1.41L10 18 3.64 11.64l1.41-1.41L10 15.17z"></path>
+            </svg>
+        </div>
+    </div>
+    <div class="setting-item">
+        <div class="setting-text">
+            <p class="setting-title">Emergency Alert for Email</p>
+            <p class="setting-description">Receive alerts via email when the sensor detects a fire or
+                flood</p>
+        </div>
+        <% if (emailAlert === 'On') { %>
+            <div class="setting-action">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#28a745">
+                    <path d="M10 15.17L19.19 5.98l1.41 1.41L10 18 3.64 11.64l1.41-1.41L10 15.17z"></path>
+                </svg>
+            </div>
+        <% } else { %>
+            <div class="setting-action">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="red">
+                    <path
+                        d="M12 10.59l4.95-4.95 1.41 1.41L13.41 12l4.95 4.95-1.41 1.41L12 13.41l-4.95 4.95-1.41-1.41L10.59 12 5.64 7.05 7.05 5.64 12 10.59z">
+                    </path>
+                </svg>
+            </div>
+        <% } %>
+    </div>
+    <div class="setting-item">
+        <div class="setting-text">
+            <p class="setting-title">Daily Vehicle Count Report via Email</p>
+            <p class="setting-description">Automatically send daily vehicle count reports via email</p>
+        </div>
+        <% if (emailReport === 'On') { %>
+            <div class="setting-action">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#28a745">
+                    <path d="M10 15.17L19.19 5.98l1.41 1.41L10 18 3.64 11.64l1.41-1.41L10 15.17z"></path>
+                </svg>
+            </div>
+        <% } else { %>
+            <div class="setting-action">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="red">
+                    <path
+                        d="M12 10.59l4.95-4.95 1.41 1.41L13.41 12l4.95 4.95-1.41 1.41L12 13.41l-4.95 4.95-1.41-1.41L10.59 12 5.64 7.05 7.05 5.64 12 10.59z">
+                    </path>
+                </svg>
+            </div>
+        <% } %>
+    </div>
+    <div class="setting-item">
+        <div class="setting-text">
+            <p class="setting-title">Daily Vehicle Count Report via Mobile</p>
+            <p class="setting-description">Automatically send daily vehicle count reports via mobile
+                phone</p>
+        </div>
+        <% if (mobileReport === 'On') { %>
+            <div class="setting-action">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#28a745">
+                    <path d="M10 15.17L19.19 5.98l1.41 1.41L10 18 3.64 11.64l1.41-1.41L10 15.17z"></path>
+                </svg>
+            </div>
+        <% } else { %>
+            <div class="setting-action">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="red">
+                    <path
+                        d="M12 10.59l4.95-4.95 1.41 1.41L13.41 12l4.95 4.95-1.41 1.41L12 13.41l-4.95 4.95-1.41-1.41L10.59 12 5.64 7.05 7.05 5.64 12 10.59z">
+                    </path>
+                </svg>
+            </div>
+        <% } %>
+    </div>
+</div>

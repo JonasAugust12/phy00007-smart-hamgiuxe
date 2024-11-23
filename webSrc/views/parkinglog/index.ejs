@@ -1,0 +1,91 @@
+<%- include('table', {parkinglogData, currentPage}) %>
+
+<div class="pagination">
+    <ul>
+        <li class="pagination-prev" onclick="window.location.href='/parkinglog?page=<%= currentPage - 1 %>'" <% if (currentPage === 1) { %>style="visibility: hidden;"<% } %> >&lt;</li>
+        
+        <% if (currentPage > 3) { %>
+            <li class="pagination-btn" onclick="window.location.href='/parkinglog?page=1'">1</li>
+            <li class="pagination-btn" id="ellipsis1" style="position: relative;">
+                ...
+                <input type="number" class="input-page" id="input-page1" onkeydown="handlePageInput(event, 1)">
+            </li>
+        <% } %>
+
+        <% for (let i = Math.max(1, currentPage - 1); i <= Math.min(totalPages, currentPage + 1); i++) { %>
+            <li class="pagination-btn <% if (i === currentPage) { %>active<% } %>" onclick="window.location.href='/parkinglog?page=<%= i %>'"><%= i %></li>
+        <% } %>
+
+        <% if (currentPage < totalPages - 2) { %>
+            <li class="pagination-btn" id="ellipsis2" style="position: relative;">
+                ...
+                <input type="number" class="input-page" id="input-page2" onkeydown="handlePageInput(event, 2)">
+            </li>
+            <li class="pagination-btn" onclick="window.location.href='/parkinglog?page=<%= totalPages %>'"><%= totalPages %></li>
+        <% } %>
+
+        <li class="pagination-next" onclick="window.location.href='/parkinglog?page=<%= currentPage + 1 %>'" <% if (currentPage === totalPages) { %>style="visibility: hidden;"<% } %> >&gt;</li>
+    </ul>
+</div>
+
+<script>
+    function toggleInput(ellipsisId, inputId) {
+        const ellipsis = document.getElementById(ellipsisId);
+        const input = document.getElementById(inputId);
+        const inputPage1 = document.getElementById('input-page1');
+        const inputPage2 = document.getElementById('input-page2');
+        if (inputPage1) {
+            inputPage1.style.display = 'none';
+        }
+        if (inputPage2) {
+            inputPage2.style.display = 'none';
+        }
+        input.style.display = 'block';
+        input.focus();
+    }
+
+    function handlePageInput(event, ellipsisNumber) {
+        if (event.key === 'Enter') {
+            goToPage(ellipsisNumber);
+        }
+    }
+
+    function goToPage(ellipsisNumber) {
+        const input = document.getElementById(`input-page${ellipsisNumber}`);
+        const page = parseInt(input.value);
+
+        if (!isNaN(page) && page >= 1 && page <= <%= totalPages %>) {
+            window.location.href = `/parkinglog?page=${page}`;
+        } else {
+            alert('Số trang không hợp lệ!');
+        }
+    }
+
+    const ellipsis1 = document.getElementById('ellipsis1');
+    if (ellipsis1) {
+        ellipsis1.addEventListener('click', function (event) {
+            event.stopPropagation();
+            toggleInput('ellipsis1', 'input-page1');
+        });
+    }
+
+    const ellipsis2 = document.getElementById('ellipsis2');
+    if (ellipsis2) {
+        ellipsis2.addEventListener('click', function (event) {
+            event.stopPropagation();
+            toggleInput('ellipsis2', 'input-page2');
+        });
+    }
+
+    document.addEventListener('click', function (event) {
+        const input1 = document.getElementById('input-page1');
+        const input2 = document.getElementById('input-page2');
+
+        if (input1 && !ellipsis1.contains(event.target) && input1.style.display === 'block') {
+            input1.style.display = 'none';
+        }
+        if (input2 && !ellipsis2.contains(event.target) && input2.style.display === 'block') {
+            input2.style.display = 'none';
+        }
+    });
+</script>

@@ -1,0 +1,33 @@
+<div class="recently-parked">
+    <div class="table-header">
+        <div class="table-name">Parking log</div>
+        <div class="full-table-btn">
+            <a href="/parkinglog">See more</a>
+        </div>
+    </div>
+
+    <div class="table-content">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Parking location</th>
+                    <th>Entry date</th>
+                    <th>Check-in time</th>
+                    <th>Check-out time</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% parkinglogData.forEach((log, index) => { %>
+                    <tr>
+                        <td class="table-index"><%= index + 1 %></td>
+                        <td class="parking-location"><%= log.parkingLocation %></td>
+                        <td class="entrydate"><%= log.entryDate %></td>
+                        <td class="check-in-time"><%= log.checkInTime %></td>
+                        <td class="check-out-time"><%= log.checkOutTime %></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+</div>
