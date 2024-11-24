@@ -7,6 +7,7 @@ const settingsController = require('../controllers/settingController');
 const {login, register, forgotPass, resetPass} = require('../controllers/authenticationController');
 const profileController = require('../controllers/profileController');
 const notificationController = require('../controllers/notificationController');
+const chatbotController = require('../controllers/chatbotController');
 
 router.get('/', dashboardController);
 router.get('/parkinglog', parkinglogController);
@@ -17,5 +18,6 @@ router.get('/forgot-password', forgotPass);
 router.get('/reset-password', resetPass);
 router.get('/profile', profileController);
 router.get('/notification', notificationController);
+router.get('/chatbot', chatbotController);
 
 module.exports = router;

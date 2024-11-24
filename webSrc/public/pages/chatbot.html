@@ -13,15 +13,16 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Kodchasan:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,200;1,300;1,400;1,500;1,600;1,700&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
         rel="stylesheet">
-    <link rel="icon" href="../img/favicon.png" type="image/png">
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="icon" href="./assets/img/favicon.png" type="image/png">
+    <link rel="stylesheet" href="./assets/css/style.css">
+    <script defer src="https://pyscript.net/alpha/pyscript.js"></script>
 </head>
 
 <body>
     <div class="container">
         <nav>
-            <a href="../index.html" class="logo">
-                <img src="../img/logo.png" alt="logo">
+            <a href="#" class="logo">
+                <img src="./assets/img/logo.png" alt="logo">
             </a>
             <div class="utilities">
                 <div class="utilities-btn full-screen">
@@ -48,7 +49,7 @@
                     </a>
                 </div>
                 <div class="utilities-avatar">
-                    <img src="../img/avatar.jpg" alt="avatar">
+                    <img src="./assets/img/avatar.jpg" alt="avatar">
                 </div>
             </div>
         </nav>
@@ -56,7 +57,7 @@
             <div class="side-bar">
                 <div class="user-info">
                     <div class="user-info__avatar">
-                        <img src="../img/avatar.jpg" alt="avatar">
+                        <img src="./assets/img/avatar.jpg" alt="avatar">
                     </div>
                     <div class="user-info__info">
                         <p>Welcome,</p>
@@ -68,7 +69,7 @@
                     <div class="menu">menu</div>
                     <ul>
                         <li class="side-bar-dashboard">
-                            <a href="../index.html">
+                            <a href="./index.html">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                                     <path fill="#fff"
                                         d="M4 13h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1zm-1 7a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v4zm10 0a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-7a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v7zm1-10h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1z">
@@ -78,7 +79,7 @@
                             </a>
                         </li>
                         <li class="side-bar-parkinglog">
-                            <a href="#">
+                            <a href="./parkinglog.html">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                                     <path fill="#fff"
                                         d="M3 19.723V21a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h12v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1.277A1.99 1.99 0 0 0 22 18v-3c0-.831-.507-1.542-1.228-1.845l-1.368-4.104A2.995 2.995 0 0 0 16.559 7H7.441a2.995 2.995 0 0 0-2.845 2.051l-1.368 4.104A2.001 2.001 0 0 0 2 15v3c0 .738.404 1.376 1 1.723zM5.5 18a1.5 1.5 0 1 1 .001-3.001A1.5 1.5 0 0 1 5.5 18zm13 0a1.5 1.5 0 1 1 .001-3.001A1.5 1.5 0 0 1 18.5 18zM7.441 9h9.117a1 1 0 0 1 .949.684L18.613 13H5.387l1.105-3.316c.137-.409.519-.684.949-.684z">
@@ -118,86 +119,75 @@
             </div>
 
             <div class="content">
-                <h2 class="title">Profile</h2>
-
-
-                <form class="upload__form">
-                    <label for="upload-avatar" class="upload__label">
-                        To upload an avatar click on the box or drop a file here!
-                        <div class="upload__container">
-                            <div class="upload__onclick">
-                                <img class="upload__onclick-icon"
-                                    src="data:image/svg+xml,%3csvg%20width='137'%20height='142'%20viewBox='0%200%20137%20142'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'%3e%3cpath%20d='M91.3157%2094.7662L68.6813%2071.3198L46.0469%2094.7662'%20stroke='black'%20stroke-width='2.01865'%20stroke-linecap='round'%20stroke-linejoin='round'/%3e%3cpath%20d='M68.6816%2071.3198V124.074'%20stroke='white'%20stroke-width='3.02797'%20stroke-linecap='round'%20stroke-linejoin='round'/%3e%3cpath%20d='M116.157%20108.775C121.676%20105.659%20126.036%20100.727%20128.548%2094.758C131.061%2088.7894%20131.583%2082.1239%20130.033%2075.8137C128.482%2069.5034%20124.947%2063.9077%20119.986%2059.9097C115.024%2055.9117%20108.919%2053.7391%20102.633%2053.7348H95.5029C93.7901%2046.8723%2090.5978%2040.5013%2086.1659%2035.1007C81.734%2029.7002%2076.1779%2025.4107%2069.9152%2022.5546C63.6526%2019.6986%2056.8464%2018.3504%2050.0083%2018.6114C43.1703%2018.8724%2036.4783%2020.7357%2030.4356%2024.0614C24.3928%2027.3871%2019.1565%2032.0885%2015.1202%2037.8122C11.084%2043.536%208.35293%2050.1331%207.13231%2057.1075C5.91169%2064.082%206.2333%2071.2524%208.07296%2078.0796C9.91262%2084.9068%2013.2225%2091.2131%2017.7536%2096.5245'%20stroke='white'%20stroke-width='3.02797'%20stroke-linecap='round'%20stroke-linejoin='round'/%3e%3cpath%20d='M91.3157%2094.7662L68.6813%2071.3198L46.0469%2094.7662'%20stroke='white'%20stroke-width='3.02797'%20stroke-linecap='round'%20stroke-linejoin='round'/%3e%3c/svg%3e"
-                                    alt="uploadIcon" />
-                                <input class="upload__input" id="upload-avatar" type="file" accept="image/*" aria-label="File upload"
-                                    name="image" />
+                <h2 class="title">Chatbot</h2>
+                <div class="chatbot">
+                    <div class="chatbot-container">
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="message bot-message">
+                                Xin chào! Đây là SmartHamgiuxe Chatbot. Tôi có thể giúp gì cho bạn?
                             </div>
-                            <span class="upload__desc">File size is less than 10 MB</span>
                         </div>
-                    </label>
-                </form>
-
-                <div class="change__info-box">
-                    <form class="editing__information">
-                        <label for="pf-fullname" class="info__label">Your Information</label>
-                        <fieldset class="info__fieldset">
-                            <div>
-                                <div class="input__wrapper">
-                                    <input class="info__input" id="pf-fullname" name="pf-fullname" placeholder="Full Name" type="text"
-                                        autocomplete="off" required value="abcd" />
-                                </div>
-                            </div>
-                            <div>
-                                <div class="input__wrapper">
-                                    <input class="info__input" id="pf-email" name="pf-email" placeholder="Email" type="email"
-                                        autocomplete="off" required value="abc.fitus.edu.vn" />
-                                </div>
-                            </div>
-                            <div>
-                                <div class="input__wrapper">
-                                    <input class="info__input" id="pf-phone" name="pf-phone" placeholder="Phone" type="text"
-                                        autocomplete="off" required value="0123456789" />
-                                </div>
-                            </div>
-                            <button class="info__button" type="submit">
-                                Update new information
-                                <div class="button__background"></div>
-                            </button>
-                        </fieldset>
-                    </form>
-
-                    <form class="editing__information">
-                        <label for="pf-fullname" class="info__label">Your password</label>
-                        <fieldset class="info__fieldset">
-                            <div>
-                                <div class="input__wrapper">
-                                    <input class="info__input" id="pf-password" name="pf-password" placeholder="Old password" type="password"
-                                        autocomplete="off"/>
-                                </div>
-                            </div>
-                            <div>
-                                <div class="input__wrapper">
-                                    <input class="info__input" id="pf-password" name="pf-password" placeholder="New password" type="password"
-                                        autocomplete="off" />
-                                </div>
-                            </div>
-                            <div>
-                                <div class="input__wrapper">
-                                    <input class="info__input" id="pf-password" name="pf-password" placeholder="Repeat the password" type="password"
-                                        autocomplete="off" />
-                                </div>
-                            </div>
-                            <button class="info__button" type="submit">
-                                Update
-                                <div class="button__background"></div>
-                            </button>
-                        </fieldset>
-                    </form>
+                        <div class="chat-input">
+                            <input type="text" id="userInput" placeholder="Type your message...">
+                            <button onclick="sendMessage()">Send</button>
+                        </div>
+                    </div>
                 </div>
-
             </div>
         </main>
+        <script>
+            async function sendMessage() {
+                const input = document.getElementById('userInput');
+                const chatMessages = document.getElementById('chatMessages');
+                console.log(input.value);
+                
+                if (input.value.trim() === '') return;
+    
+                // Create user message
+                const userMessage = document.createElement('div');
+                userMessage.classList.add('message', 'user-message');
+                userMessage.textContent = input.value;
+                chatMessages.appendChild(userMessage);
 
+                // Scroll to bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                // Clear input
+                input.value = '';
+
+                try {
+                    // Send request to Flask server
+                    const response = await fetch('http://localhost:5000/api/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ message: userMessage.textContent }),
+                    });
+
+                    const data = await response.json();
+
+                    // Add bot message
+                    const botMessage = document.createElement('div');
+                    botMessage.classList.add('message', 'bot-message');
+                    botMessage.textContent = data.response;
+                    chatMessages.appendChild(botMessage);
+
+                    // Scroll to bottom
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                } catch (error) {
+                    console.error('Error:', error);
+                    // Handle error appropriately
+                }
+            }
+    
+            // Allow sending message with Enter key
+            document.getElementById('userInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        </script>
     </div>
 </body>
 

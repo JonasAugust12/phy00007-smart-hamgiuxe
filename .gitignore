@@ -128,3 +128,7 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# AI training model
+webSrc/views/chatbot/model/phobert_model.pth
+webSrc/views/chatbot/model/__pycache__ 
