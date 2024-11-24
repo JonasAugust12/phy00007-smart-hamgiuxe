@@ -1,0 +1,106 @@
+<div>
+    <form class="upload__form">
+        <label for="upload-avatar" class="upload__label">
+            To upload an avatar click on the box or drop a file here!
+            <div class="upload__container">
+                <div class="upload__onclick">
+                    <img class="upload__onclick-icon"
+                        src="data:image/svg+xml,%3csvg%20width='137'%20height='142'%20viewBox='0%200%20137%20142'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'%3e%3cpath%20d='M91.3157%2094.7662L68.6813%2071.3198L46.0469%2094.7662'%20stroke='black'%20stroke-width='2.01865'%20stroke-linecap='round'%20stroke-linejoin='round'/%3e%3cpath%20d='M68.6816%2071.3198V124.074'%20stroke='white'%20stroke-width='3.02797'%20stroke-linecap='round'%20stroke-linejoin='round'/%3e%3cpath%20d='M116.157%20108.775C121.676%20105.659%20126.036%20100.727%20128.548%2094.758C131.061%2088.7894%20131.583%2082.1239%20130.033%2075.8137C128.482%2069.5034%20124.947%2063.9077%20119.986%2059.9097C115.024%2055.9117%20108.919%2053.7391%20102.633%2053.7348H95.5029C93.7901%2046.8723%2090.5978%2040.5013%2086.1659%2035.1007C81.734%2029.7002%2076.1779%2025.4107%2069.9152%2022.5546C63.6526%2019.6986%2056.8464%2018.3504%2050.0083%2018.6114C43.1703%2018.8724%2036.4783%2020.7357%2030.4356%2024.0614C24.3928%2027.3871%2019.1565%2032.0885%2015.1202%2037.8122C11.084%2043.536%208.35293%2050.1331%207.13231%2057.1075C5.91169%2064.082%206.2333%2071.2524%208.07296%2078.0796C9.91262%2084.9068%2013.2225%2091.2131%2017.7536%2096.5245'%20stroke='white'%20stroke-width='3.02797'%20stroke-linecap='round'%20stroke-linejoin='round'/%3e%3cpath%20d='M91.3157%2094.7662L68.6813%2071.3198L46.0469%2094.7662'%20stroke='white'%20stroke-width='3.02797'%20stroke-linecap='round'%20stroke-linejoin='round'/%3e%3c/svg%3e"
+                        alt="uploadIcon" />
+                    <input class="upload__input" id="upload-avatar" type="file" accept="image/*"
+                        aria-label="File upload" name="image" />
+                </div>
+                <span class="upload__desc">File size is less than 10 MB</span>
+                <button class="upload__button" type="submit"> Upload </button> 
+            </div>
+        </label>
+    </form>
+
+    <div class="change__info-box">
+        <form class="editing__information">
+            <label for="pf-fullname" class="info__label">Your Information</label>
+            <fieldset class="info__fieldset">
+                <div>
+                    <div class="input__wrapper">
+                        <input class="info__input" id="pf-fullname" name="pf-fullname" placeholder="Full Name"
+                            type="text" autocomplete="off" required value="abcd" />
+                    </div>
+                </div>
+                <div>
+                    <div class="input__wrapper">
+                        <input class="info__input" id="pf-email" name="pf-email" placeholder="Email" type="email"
+                            autocomplete="off" required value="abc.fitus.edu.vn" />
+                    </div>
+                </div>
+                <div>
+                    <div class="input__wrapper">
+                        <input class="info__input" id="pf-phone" name="pf-phone" placeholder="Phone" type="text"
+                            autocomplete="off" required value="0123456789" />
+                    </div>
+                </div>
+                <button class="info__button" type="submit">
+                    Update new information
+                    <div class="button__background"></div>
+                </button>
+            </fieldset>
+        </form>
+
+        <form class="editing__information">
+            <label for="pf-fullname" class="info__label">Your password</label>
+            <fieldset class="info__fieldset">
+                <div>
+                    <div class="input__wrapper">
+                        <input class="info__input" id="pf-password" name="pf-password" placeholder="Old password"
+                            type="password" autocomplete="off" />
+                    </div>
+                </div>
+                <div>
+                    <div class="input__wrapper">
+                        <input class="info__input" id="pf-password" name="pf-password" placeholder="New password"
+                            type="password" autocomplete="off" />
+                    </div>
+                </div>
+                <div>
+                    <div class="input__wrapper">
+                        <input class="info__input" id="pf-password" name="pf-password" placeholder="Repeat the password"
+                            type="password" autocomplete="off" />
+                    </div>
+                </div>
+                <button class="info__button" type="submit">
+                    Update
+                    <div class="button__background"></div>
+                </button>
+            </fieldset>
+        </form>
+    </div>
+</div>
+
+<script>
+   document.getElementById('upload-avatar').addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        const container = document.querySelector('.upload__onclick');
+        let preview = container.querySelector('img.preview');
+        const desc = document.querySelector('.upload__desc');
+        const button = document.querySelector('.upload__button');
+
+        if (!preview) {
+            preview = document.createElement('img');
+            preview.classList.add('preview');
+            container.appendChild(preview);
+        }
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                desc.style.display = 'none';
+                button.textContent = 'Update';
+                button.style.display = 'flex';
+            };
+
+            reader.readAsDataURL(file);
+        }
+    });
+
+</script>

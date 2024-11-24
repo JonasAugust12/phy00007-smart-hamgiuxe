@@ -15,6 +15,13 @@ app.use(expressLayouts);
 // Routes
 app.use('/', mainRoutes);
 
+app.use(session({
+  secret: 'mysecretkey',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false }
+}));
+
 
 app.use(express.static(path.join(__dirname, 'public')));
 

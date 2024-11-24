@@ -1,4 +1,12 @@
-<% const notifications = ['Notification 1', 'Notification 2', 'Notification 3', 'Notification 4', 'Notification 5']; %>
+<% 
+const notifications = [
+    { type: 'Alert', date: '2024-11-20' },
+    { type: 'Daily Report', date: '2024-11-21', vehicleCount: 500 },
+    { type: 'Weekly Report', date: '2024-W47', vehicleCount: 3500 },
+    { type: 'Alert', date: '2024-11-22' },
+    { type: 'Daily Report', date: '2024-11-23', vehicleCount: 600 }
+]; 
+%>
 
 <nav>
     <div id="log-out-overlay" class="overlay">
@@ -14,11 +22,6 @@
         <img src="./img/logo.png" alt="logo">
     </a>
     <div class="utilities">
-        <div class="utilities-btn full-screen" id="fullscreen-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                <path fill="#fff" d="M5 5h5V3H3v7h2zm5 14H5v-5H3v7h7zm11-5h-2v5h-5v2h7zm-2-4h2V3h-7v2h5z"></path>
-            </svg>
-        </div>
         <div class="utilities-btn notification" id="notification-btn">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                 <path fill="#fff"
@@ -29,13 +32,19 @@
             <div class="noti-box" id="noti-box">
                 <div class="noti-title">Notifications</div>
                 <div class="noti-list">
-                    <% notifications.forEach((notification) => { %>
+                    <% notifications.forEach((notification)=> { %>
                         <div class="noti-item">
-                            <%= notification %>
+                            <% if (notification.type==='Alert' ) { %>
+                                Fire alarm triggered on <%= notification.date %>
+                            <% } else if (notification.type==='Daily Report' ) { %>
+                                    Daily car count on <%= notification.date %>: <%= notification.vehicleCount %> cars
+                            <% } else if (notification.type==='Weekly Report' ) { %>
+                                    Weekly car count for week <%= notification.date %>: <%= notification.vehicleCount %> cars
+                            <% } %>
                         </div>
                     <% }); %>
                 </div>
-                <div class="noti-see-all">See all</div>
+                <div class="noti-see-all"  onclick="window.location.href = '/notification'">See all</div>
             </div>
         </div>
         <div class="utilities-btn logout">
@@ -46,41 +55,15 @@
                 </path>
             </svg>
         </div>
-        <div class="utilities-avatar">
+        <div class="utilities-avatar" onclick="window.location.href = '/profile'">
             <img src="./img/avatar.jpg" alt="avatar">
+            <div class="edit-profile-title">Edit profile</div>
         </div>
     </div>
 </nav>
 
-<script>
-    // Fullscreen button
-    document.getElementById('fullscreen-btn').addEventListener('click', function () {
-        if (!document.fullscreenElement &&  
-            !document.mozFullScreenElement &&
-            !document.webkitFullscreenElement && 
-            !document.msFullscreenElement) {
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen();
-            } else if (document.documentElement.mozRequestFullScreen) {
-                document.documentElement.mozRequestFullScreen();
-            } else if (document.documentElement.webkitRequestFullscreen) {
-                document.documentElement.webkitRequestFullscreen();
-            } else if (document.documentElement.msRequestFullscreen) {
-                document.documentElement.msRequestFullscreen();
-            }
-        } else {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.mozCancelFullScreen) {
-                document.mozCancelFullScreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            } else if (document.msExitFullscreen) {
-                document.msExitFullscreen();
-            }
-        }
-    });
 
+<script>
     // Notification button
     document.getElementById('notification-btn').addEventListener('click', function (event) {
         event.stopPropagation(); // Prevent click event from propagating to document

@@ -3,10 +3,25 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <string>
+#include <Firebase_ESP_Client.h>
+#include "addons/TokenHelper.h"
+#include "addons/RTDBHelper.h"
 
 // WIFI
 const char *ssid = "Wokwi-GUEST";
 const char *password = "";
+
+// FIREBASE
+#define FIREBASE_URL "https://phy00007-smart-hamgiuxe-22326-default-rtdb.firebaseio.com/"
+#define FIREBASE_API_KEY "AIzaSyDT9N4qIWK179RqKhlGmR5TqUzJfP4hMvY"
+
+FirebaseData fbdo;
+FirebaseAuth auth;
+FirebaseConfig config;
+
+unsigned long sendDataPreviousMillis = 0;
+bool signupOk = false;
+bool ledState = false;
 
 // MQTT BROKER
 const char *mqtt_broker = "broker.emqx.io";
@@ -96,6 +111,27 @@ void setupServoTimer()
   servo.attach(servo_pin, 500, 2400); // Thiết lập min/max pulse width
 }
 
+void setupFirebase()
+{
+  config.host = FIREBASE_URL;
+  config.api_key = FIREBASE_API_KEY;
+
+  // Sign up to Firebase
+  if (Firebase.signUp(&config, &auth, "", ""))
+  {
+    Serial.println("Connected to Firebase");
+    signupOk = true;
+  }
+  else
+  {
+    Serial.printf("%s\n", config.signer.signupError.message.c_str());
+  }
+
+  config.token_status_callback = tokenStatusCallback;
+  Firebase.begin(&config, &auth);
+  Firebase.reconnectWiFi(true);
+}
+
 void setup()
 {
   // put your setup code here, to run once:
@@ -115,6 +151,9 @@ void setup()
   }
   client.subscribe(mqtt_topic);
   client.publish(mqtt_topic, "Hello from ESP32");
+
+  // FIREBASE
+  setupFirebase();
 
   // GATE
   pinMode(in_trig, OUTPUT);
@@ -182,6 +221,7 @@ void loop()
   handleGateFlow(out_trig, out_echo, isGateOutOpened, isOutSensorExist, isPassingOut, startPassingOutTime, "Exit");
   handleFireProtection();
   handleParkingLot();
+  handleFirebaseAction();
 
   LCD.setCursor(0, 0);
   LCD.print("    WELCOME!    ");
@@ -199,6 +239,43 @@ void loop()
   }
 
   delay(100);
+}
+
+void handleFirebaseAction()
+{
+  if (Firebase.ready() && signupOk && (millis() - sendDataPreviousMillis > 5000 || sendDataPreviousMillis == 0))
+  {
+    sendDataPreviousMillis = millis();
+    // ledState = digitalRead(led);
+    // Serial.print("Current LED state: ");
+    // Serial.println(ledState);
+
+    // if (Firebase.RTDB.setBool(&fbdo, "LED/ledState", ledState))
+    // {
+    //   Serial.println();
+    //   Serial.print(ledState);
+    //   Serial.print(" - successfully saved to: " + fbdo.dataPath());
+    //   Serial.println(" (" + fbdo.dataType() + ")");
+    // }
+    // else
+    // {
+    //   Serial.println("FAILED to save: " + fbdo.errorReason());
+    // }
+
+    if (Firebase.RTDB.getBool(&fbdo, "LED/ledState"))
+    {
+      if (fbdo.dataType() == "boolean")
+      {
+        ledState = fbdo.boolData();
+        Serial.println("Successfully READ from " + fbdo.dataPath() + ": " + ledState + " (" + fbdo.dataType() + ")");
+        digitalWrite(led, ledState);
+      }
+    }
+    else
+    {
+      Serial.println("FAILED to read: " + fbdo.errorReason());
+    }
+  }
 }
 
 void handleGateFlow(int sensorTrig, int sensorEcho, bool &isGateOpened, bool &isSensorExist,

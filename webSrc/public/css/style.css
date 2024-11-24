@@ -73,6 +73,8 @@ nav {
 
 .utilities-avatar {
     padding: 1.5rem;
+    cursor: pointer;
+    position: relative;
 }
 
 .utilities-avatar img {
@@ -80,6 +82,22 @@ nav {
     height: 3rem;
     border-radius: 50%;
     user-select: none;
+}
+
+.edit-profile-title {
+    display: none;
+    position: absolute;
+    top: 80%;
+    left: 5px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+}
+
+.utilities-avatar:hover .edit-profile-title {
+    display: block;
 }
 
 /* notification */
@@ -141,6 +159,36 @@ nav {
     border-top: 1px solid #363636;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     user-select: none;
+}
+
+.notification-wrapper {
+    width: 100%;
+    height: 590px;
+    display: flex;
+    justify-content: center;
+}
+
+.notification-list {
+    width: 80%;
+    overflow-y: auto;
+    list-style: none;
+    padding: 2rem;
+    box-sizing: border-box;
+    border: 1px solid #e4e4e4;
+    border-radius: 20px;
+    box-shadow: 0 1px 2.94px .06px #041a3729;
+    background-color: var(--primary-color);
+}
+
+.notification-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e4e4e4;
+    color: #96a2b4;
+    font-size: 2.5rem;
+    font-weight: 600;
 }
 
 /* body */
@@ -655,4 +703,160 @@ main {
     height: 3rem;
     box-sizing: content-box;
     cursor: pointer;
+}
+
+/* form */
+
+.upload__form {
+    min-height: 240px;
+}
+
+.upload__label {
+    display: inline-block;  
+    font-size: 2rem;
+    font-weight: 600;
+    color: #96a2b4;
+}
+
+.upload__container {
+    position: relative;
+    margin: 0 auto;
+    width: max-content;
+    padding-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.upload__container img.preview {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 19.7rem;
+    width: 19.7rem;
+    object-fit: cover;
+    display: none;
+    border-radius: 0.75rem;
+}
+
+.upload__onclick {
+    position: relative;
+    height: 20rem;
+    width: 20rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 0.75rem;
+    border: 2px dashed #fff;
+}
+
+.upload__onclick-icon {
+    margin: 0 auto;
+    width: 6rem;
+}
+
+.upload__input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 20rem;
+    height: 20rem;
+    cursor: pointer;
+    opacity: 0;
+}
+
+.upload__desc {
+    font-size: 13px;
+    color: #b2b2b2;
+    display: block;
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.upload__button {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    height: 3rem;
+    width: 15rem;
+    border-radius: 9999px;
+    border: 2px solid #000;
+    padding: 0.75rem 1.25rem;
+    position: relative;
+    overflow: hidden;
+    font-size: 1.5rem;
+    margin-top: 1rem;
+    cursor: pointer;
+}
+
+.upload__button:hover {
+    background-color: #000;
+    color: #fff;
+}
+
+.editing__information {
+    margin-top: 1rem;
+}
+
+.change__info-box {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+}
+
+.info__label {
+    display: inline-block;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #96a2b4;
+}
+
+.info__fieldset {
+    margin-top: 1rem;
+    border: none;
+}
+
+.input__wrapper {
+    position: relative;
+    margin-top: 1rem;
+}
+
+.info__input {
+    height: 50px;
+    width: 100%;
+    border-radius: 0.75rem;
+    background-color: #383838;
+    padding: 0 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    color: #a5a5a5;
+    outline: none;
+    font-size: 1.8rem;
+}
+
+.info__input:focus {
+    outline: none;
+    box-shadow: none;
+    border: 2px solid #ffffff;
+}
+
+.info__button {
+    float: right;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 5rem;
+    width: 15rem;
+    border-radius: 9999px;
+    border: 2px solid #000;
+    padding: 0.75rem 1.25rem;
+    position: relative;
+    overflow: hidden;
+    font-size: 1.5rem;
+    margin-top: 2rem;
+    cursor: pointer;
+}
+
+.info__button:hover {
+    background-color: #000;
+    color: #fff;
 }
