@@ -132,3 +132,6 @@ dist
 # AI training model
 webSrc/views/chatbot/model/phobert_model.pth
 webSrc/views/chatbot/model/__pycache__ 
+
+# firebase service account
+webSrc/phy00007-smart-hamgiuxe-22326-firebase-adminsdk-7vqqz-4a0a6b40fc.json

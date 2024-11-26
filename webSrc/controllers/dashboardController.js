@@ -30,18 +30,25 @@ const parkinglogData = [
         checkOutTime: '1:20'
     }
 ]
-const barrier = 'On';
 const siren = 'Off';
 const temperature = 25;
-const dailyVehicleCount = 500;
-const weeklyVehicleCount = 3500;
 
-const dashboardController = (req, res) => {
+const db = require('../config/firebase');
+let data = {};
+
+db.ref('/').on('value', (snapshot) => {
+    data = snapshot.val();
+});
+
+const dashboardController = async (req, res) => {
+    const {BARRIER, CAR} = data;
+    const {state: barrier} = BARRIER;
+    const {carInDay: dailyVehicleCount, carInMonth: weeklyVehicleCount} = CAR;
     res.render('dashboard', {
         title: 'Dashboard',
         layout: 'layouts/main',
         parkinglogData,
-        barrier,
+        barrier : barrier ? 'On' : 'Off',
         siren,
         temperature,
         dailyVehicleCount,
@@ -49,4 +56,20 @@ const dashboardController = (req, res) => {
     });
 }
 
-module.exports = dashboardController;
+const toggleBarrier = async (req, res) => {
+    try {
+        const {status} = req.body;
+        const ref = db.ref('BARRIER');
+
+        await ref.child('state').set(status);
+        res.status(200).json({message: 'Barrier status updated', barrier});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({message: 'An error occurred'});
+    }
+}
+
+module.exports = {
+    dashboardController,
+    toggleBarrier
+};

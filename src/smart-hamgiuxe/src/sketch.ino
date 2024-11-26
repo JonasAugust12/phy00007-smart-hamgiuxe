@@ -1,34 +1,32 @@
 #include <ESP32Servo.h>
 #include <LiquidCrystal_I2C.h>
 #include <WiFi.h>
-#include <PubSubClient.h>
 #include <string>
-#include <Firebase_ESP_Client.h>
-#include "addons/TokenHelper.h"
-#include "addons/RTDBHelper.h"
+#include <FirebaseClient.h>
+#include <WiFiClientSecure.h>
+#include <ArduinoJson.h>
 
 // WIFI
 const char *ssid = "Wokwi-GUEST";
 const char *password = "";
 
 // FIREBASE
-#define FIREBASE_URL "https://phy00007-smart-hamgiuxe-22326-default-rtdb.firebaseio.com/"
-#define FIREBASE_API_KEY "AIzaSyDT9N4qIWK179RqKhlGmR5TqUzJfP4hMvY"
+#define DATABASE_URL "https://phy00007-smart-hamgiuxe-22326-default-rtdb.firebaseio.com"
+#define DATABASE_SECRET "FOO9eBjUDTEu5gqSYJLLlJlxHSK2GWSBaKBxq3cO"
 
-FirebaseData fbdo;
-FirebaseAuth auth;
-FirebaseConfig config;
+WiFiClientSecure ssl, ssl2;
+DefaultNetwork network;
+using AsyncClient = AsyncClientClass;
+AsyncClient aClient(ssl, getNetwork(network)), aClient2(ssl2, getNetwork(network));
 
-unsigned long sendDataPreviousMillis = 0;
-bool signupOk = false;
+void asyncCB(AsyncResult &aResult);
+void printResult(AsyncResult &aResult);
+
+FirebaseApp app;
+RealtimeDatabase Database;
+LegacyToken dbSecret(DATABASE_SECRET);
+
 bool ledState = false;
-
-// MQTT BROKER
-const char *mqtt_broker = "broker.emqx.io";
-const char *mqtt_topic = "smart-parking-system";
-const char *mqtt_username = "sps";
-const char *mqtt_password = "spspwd";
-const int mqtt_port = 1883;
 
 // GATE
 int in_trig = 33;
@@ -51,135 +49,16 @@ Servo servo;
 #define SERVO_TIMER_GROUP 1 // Sử dụng timer group 1
 
 WiFiClient espClient;
-PubSubClient client(espClient);
 
-void setupWifi()
-{
-  delay(10);
-  Serial.println("Connecting to WiFi...");
-  WiFi.begin(ssid, password);
+// REAL TIME
+#define UTC_OFFSET     7 * 3600
+#define UTC_OFFSET_DST 0
 
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(500);
-    Serial.println(".");
-  }
-  Serial.println("Connected to WiFi");
-}
-
-void connectToMQTT()
-{
-  while (!client.connected())
-  {
-    String client_id = "esp32-client-" + String(WiFi.macAddress());
-    Serial.printf("Connecting to MQTT Broker as %s.....\n", client_id.c_str());
-    if (client.connect(client_id.c_str(), mqtt_username, mqtt_password))
-    {
-      Serial.println("Connected to MQTT broker");
-      client.subscribe(mqtt_topic);
-      client.publish(mqtt_topic, "Hello from ESP32");
-    }
-    else
-    {
-      Serial.print("Failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" try again in 2 seconds");
-      delay(2000);
-    }
-  }
-}
-
-void mqttCallback(char *mqtt_topic, byte *payload, unsigned int length)
-{
-  Serial.print("Message received on mqtt_topic: ");
-  Serial.println(mqtt_topic);
-  Serial.print("Message: ");
-  for (unsigned int i = 0; i < length; i++)
-  {
-    Serial.print((char)payload[i]);
-  }
-  Serial.println("\n-----------------------");
-}
-
-void setupServoTimer()
-{
-  // Cấu hình ESP32Servo để sử dụng timer cụ thể
-  ESP32PWM::allocateTimer(SERVO_TIMER_GROUP);
-
-  // Thiết lập thông số cho servo
-  servo.setPeriodHertz(50);           // Tần số tiêu chuẩn cho servo là 50Hz
-  servo.attach(servo_pin, 500, 2400); // Thiết lập min/max pulse width
-}
-
-void setupFirebase()
-{
-  config.host = FIREBASE_URL;
-  config.api_key = FIREBASE_API_KEY;
-
-  // Sign up to Firebase
-  if (Firebase.signUp(&config, &auth, "", ""))
-  {
-    Serial.println("Connected to Firebase");
-    signupOk = true;
-  }
-  else
-  {
-    Serial.printf("%s\n", config.signer.signupError.message.c_str());
-  }
-
-  config.token_status_callback = tokenStatusCallback;
-  Firebase.begin(&config, &auth);
-  Firebase.reconnectWiFi(true);
-}
-
-void setup()
-{
-  // put your setup code here, to run once:
-  Serial.begin(115200);
-  Serial.println("Hello, ESP32!");
-  LCD.init();
-  LCD.backlight();
-
-  // WIFI & MQTT
-  setupWifi();
-  client.setServer(mqtt_broker, mqtt_port);
-  client.setKeepAlive(60);
-  client.setCallback(mqttCallback);
-  while (!client.connected())
-  {
-    connectToMQTT();
-  }
-  client.subscribe(mqtt_topic);
-  client.publish(mqtt_topic, "Hello from ESP32");
-
-  // FIREBASE
-  setupFirebase();
-
-  // GATE
-  pinMode(in_trig, OUTPUT);
-  pinMode(in_echo, INPUT);
-  pinMode(out_trig, OUTPUT);
-  pinMode(out_echo, INPUT);
-
-  setupServoTimer();
-
-  // FIRE
-  pinMode(temp_sensor, INPUT);
-  pinMode(button, INPUT);
-  pinMode(led, OUTPUT);
-  pinMode(buzzer, OUTPUT);
-  pinMode(fire_relay, OUTPUT);
-  pinMode(smoke_sensor, INPUT);
-
-  LCD.setCursor(0, 0);
-  LCD.print("      SMART     ");
-  LCD.setCursor(0, 1);
-  LCD.print(" PARKING SYSTEM ");
-  delay(2000);
-  LCD.clear();
-}
 
 // GATE SYSTEM
+bool isGateActive = true;
+int carCountInDay = 0;
+int carCountInMonth = 0;
 const unsigned long passingTimeout = 3000;
 
 unsigned long startPassingTime = 0;
@@ -212,16 +91,219 @@ bool holdButton = false;
 String receivedMessage = "";
 int slotLeft = 3;
 
-void loop()
+bool isKeyExist(JsonObject obj, const char* key) {
+  for (auto kvp : obj) {
+    if (strcmp(kvp.key().c_str(), key) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void setupWifi()
 {
-  client.loop();
+  delay(10);
+  Serial.print("Connecting to WiFi...");
+  WiFi.begin(ssid, password, 6);
+
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+}
+
+void setupServoTimer()
+{
+  // Cấu hình ESP32Servo để sử dụng timer cụ thể
+  ESP32PWM::allocateTimer(SERVO_TIMER_GROUP);
+
+  // Thiết lập thông số cho servo
+  servo.setPeriodHertz(50);           // Tần số tiêu chuẩn cho servo là 50Hz
+  servo.attach(servo_pin, 500, 2400); // Thiết lập min/max pulse width
+}
+
+void setupFirebase()
+{
+  ssl.setInsecure();
+  ssl2.setInsecure();
+  initializeApp(aClient2, app, getAuth(dbSecret), asyncCB, "authTask");
+  app.getApp<RealtimeDatabase>(Database);
+  Database.url(DATABASE_URL);
+  
+  Database.get(aClient2, "/", asyncCB, false, "initTask");
+
+  Database.setSSEFilters("put,patch");
+  Database.get(aClient, "/", asyncCB, true, "streamTask");
+}
+
+void asyncCB(AsyncResult &aResult)
+{
+  // WARNING!
+  // Do not put your codes inside the callback and printResult.
+
+  printResult(aResult);
+}
+
+void printResult(AsyncResult &aResult)
+{
+  if (aResult.isEvent())
+  {
+    Firebase.printf("Event task: %s, msg: %s, code: %d\n", aResult.uid().c_str(), aResult.appEvent().message().c_str(), aResult.appEvent().code());
+  }
+
+  if (aResult.isDebug())
+  {
+    Firebase.printf("Debug task: %s, msg: %s\n", aResult.uid().c_str(), aResult.debug().c_str());
+  }
+
+  if (aResult.isError())
+  {
+    Firebase.printf("Error task: %s, msg: %s, code: %d\n", aResult.uid().c_str(), aResult.error().message().c_str(), aResult.error().code());
+  }
+
+  if (aResult.available())
+  {
+    RealtimeDatabaseResult &RTDB = aResult.to<RealtimeDatabaseResult>();
+    if (RTDB.isStream())
+    {
+      Serial.println("----------------------------");
+      Firebase.printf("task: %s ", aResult.uid().c_str());
+      Firebase.printf("event: %s ", RTDB.event().c_str());
+      Firebase.printf("path: %s ", RTDB.dataPath().c_str());
+      Serial.println("");
+
+      if (RTDB.dataPath() == "/BARRIER/state")
+      {
+        bool barrierState = RTDB.to<bool>();
+        isGateActive = barrierState;
+      }
+
+
+
+      // FETCH OTHER STREAM DATA HERE
+
+
+
+    }
+    else
+    {
+      Serial.println("----------------------------");
+      Firebase.printf("task: %s, payload: %s\n", aResult.uid().c_str(), aResult.c_str());
+
+      if (aResult.uid() == "initTask" || RTDB.dataPath() == "/")
+      {
+        String payload = RTDB.to<String>();
+
+        JsonDocument doc;
+        deserializeJson(doc, payload);
+
+        if (isKeyExist(doc.as<JsonObject>(), "BARRIER"))
+        {
+          JsonObject barrier = doc["BARRIER"];
+          isGateActive = barrier["state"];
+        }
+        if (isKeyExist(doc.as<JsonObject>(), "CAR"))
+        {
+          JsonObject car = doc["CAR"];
+          carCountInDay = car["carInDay"];
+          carCountInMonth = car["carInMonth"];
+        }
+
+
+
+        // FETCH OTHER INIT DATA HERE
+
+
+
+      }
+    }
+
+    Firebase.printf("Free Heap: %d\n", ESP.getFreeHeap());
+  }
+}
+
+void setupNTP() {
+  configTime(UTC_OFFSET, UTC_OFFSET_DST, "asia.pool.ntp.org", "time.google.com", "pool.ntp.org");
+  Serial.print("Syncing time...");
+  struct tm timeinfo;
+  for (int i = 0; i < 10; i++) { // Retry 10 times
+    if (getLocalTime(&timeinfo)) {
+      Serial.println("");
+      Serial.println("Time synchronized successfully");
+      Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+      return;
+    }
+    delay(500); // Wait before retrying
+    Serial.print(".");
+  }
+  if (time(nullptr) <= 0) {
+    Serial.println(" Failed to obtain time.");
+  }
+}
+
+void setup()
+{
+  // put your setup code here, to run once:
+  Serial.begin(115200);
+  Serial.println("Hello, ESP32!");
+  LCD.init();
+  LCD.backlight();
+
+  // WIFI & TIME
+  setupWifi();
+  setupNTP();
+
+  // FIREBASE
+  setupFirebase();
+
+  // GATE
+  pinMode(in_trig, OUTPUT);
+  pinMode(in_echo, INPUT);
+  pinMode(out_trig, OUTPUT);
+  pinMode(out_echo, INPUT);
 
   setupServoTimer();
-  handleGateFlow(in_trig, in_echo, isGateInOpened, isInSensorExist, isPassing, startPassingTime, "Entry");
-  handleGateFlow(out_trig, out_echo, isGateOutOpened, isOutSensorExist, isPassingOut, startPassingOutTime, "Exit");
+
+  // FIRE
+  pinMode(temp_sensor, INPUT);
+  pinMode(button, INPUT);
+  pinMode(led, OUTPUT);
+  pinMode(buzzer, OUTPUT);
+  pinMode(fire_relay, OUTPUT);
+  pinMode(smoke_sensor, INPUT);
+  LCD.setCursor(0, 0);
+  LCD.print("      SMART     ");
+  LCD.setCursor(0, 1);
+  LCD.print(" PARKING SYSTEM ");
+  delay(1000);
+  LCD.clear();
+}
+
+unsigned long ms = 0;
+void loop()
+{
+  checkCarCountReset();
+  setupServoTimer();
+
+  app.loop();
+  Database.loop();
+
+  bool isCarEntered = false;
+  if (isGateActive)
+  {
+    isCarEntered = handleGateFlow(in_trig, in_echo, isGateInOpened, isInSensorExist, isPassing, startPassingTime, "Entry");
+    handleGateFlow(out_trig, out_echo, isGateOutOpened, isOutSensorExist, isPassingOut, startPassingOutTime, "Exit");
+  }
+
+  if (app.ready() && isCarEntered)
+  {
+    updateCarCount();
+  }
   handleFireProtection();
   handleParkingLot();
-  handleFirebaseAction();
 
   LCD.setCursor(0, 0);
   LCD.print("    WELCOME!    ");
@@ -229,61 +311,51 @@ void loop()
   LCD.print("Slot Left: ");
   LCD.print(slotLeft);
 
-  String payload = "Slot Left: " + String(slotLeft);
+  String payload = "Slot Left: ";
+  payload.concat(String(slotLeft));
   static String lastPayload = "";
 
-  if (payload != lastPayload)
-  {
-    client.publish(mqtt_topic, payload.c_str());
-    lastPayload = payload;
-  }
-
   delay(100);
+  
 }
 
-void handleFirebaseAction()
+void updateCarCount()
 {
-  if (Firebase.ready() && signupOk && (millis() - sendDataPreviousMillis > 5000 || sendDataPreviousMillis == 0))
+  JsonWriter writer;
+  object_t CAR, carInDay, carInMonth;
+
+  writer.create(carInDay, "carInDay", carCountInDay);
+  writer.create(carInMonth, "carInMonth", carCountInMonth);
+  writer.join(CAR, 2, carInDay, carInMonth);
+
+  Database.set<object_t>(aClient2, "/CAR", CAR, asyncCB, "carTask");
+}
+
+void checkCarCountReset()
+{
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo))
   {
-    sendDataPreviousMillis = millis();
-    // ledState = digitalRead(led);
-    // Serial.print("Current LED state: ");
-    // Serial.println(ledState);
+    Serial.println("Failed to obtain time");
+    return;
+  }
 
-    // if (Firebase.RTDB.setBool(&fbdo, "LED/ledState", ledState))
-    // {
-    //   Serial.println();
-    //   Serial.print(ledState);
-    //   Serial.print(" - successfully saved to: " + fbdo.dataPath());
-    //   Serial.println(" (" + fbdo.dataType() + ")");
-    // }
-    // else
-    // {
-    //   Serial.println("FAILED to save: " + fbdo.errorReason());
-    // }
+  if (timeinfo.tm_hour == 0 && timeinfo.tm_min == 0 && timeinfo.tm_sec >= 0 && timeinfo.tm_sec <= 5)
+  {
+    carCountInDay = 0;
+  }
 
-    if (Firebase.RTDB.getBool(&fbdo, "LED/ledState"))
-    {
-      if (fbdo.dataType() == "boolean")
-      {
-        ledState = fbdo.boolData();
-        Serial.println("Successfully READ from " + fbdo.dataPath() + ": " + ledState + " (" + fbdo.dataType() + ")");
-        digitalWrite(led, ledState);
-      }
-    }
-    else
-    {
-      Serial.println("FAILED to read: " + fbdo.errorReason());
-    }
+  if (timeinfo.tm_mday == 1 && timeinfo.tm_hour == 0 && timeinfo.tm_min == 0 && timeinfo.tm_sec >= 0 && timeinfo.tm_sec <= 5)
+  {
+    carCountInMonth = 0;
   }
 }
 
-void handleGateFlow(int sensorTrig, int sensorEcho, bool &isGateOpened, bool &isSensorExist,
+bool handleGateFlow(int sensorTrig, int sensorEcho, bool &isGateOpened, bool &isSensorExist,
                     bool &isPassing, unsigned long &startPassingTime, const char *gateType)
 {
   int distance_cm = getDistance(sensorTrig, sensorEcho);
-
-  if (distance_cm < 100 && !isGateOpened) // Car approaching gate
+  if (distance_cm > 0 && distance_cm < 100 && !isGateOpened) // Car approaching gate
   {
     openGate();
     isGateOpened = true;
@@ -320,10 +392,17 @@ void handleGateFlow(int sensorTrig, int sensorEcho, bool &isGateOpened, bool &is
           isSensorExist = false;
           Serial.print("Gate Closed - ");
           Serial.println(gateType);
+          if (d <= passingTimeout && gateType == "Entry")
+          {
+            carCountInDay += 1;
+            carCountInMonth += 1;
+            return true;
+          }
         }
       }
     }
   }
+  return false;
 }
 
 void openGate()

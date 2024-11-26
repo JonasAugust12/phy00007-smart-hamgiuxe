@@ -64,11 +64,12 @@
         </div>
     </div>
 </div>
-
 <script>
     const device_overlay = document.getElementById('device-overlay');
-        const device_confirmYesButton = document.getElementById('device-yes');
-        const device_confirmNoButton = document.getElementById('device-no');
+    const device_confirmYesButton = document.getElementById('device-yes');
+    const device_confirmNoButton = document.getElementById('device-no');
+    const barrierElement = document.getElementById('barrier');
+
     function showDeviceOverlay() {
         device_overlay.style.display = 'flex';
         document.body.style.overflow = 'hidden';
@@ -77,12 +78,39 @@
         device_overlay.style.display = 'none';
         document.body.style.overflow = 'auto';
     }
-    device_confirmYesButton.addEventListener('click', () => {
+    device_confirmYesButton.addEventListener('click', async () => {
         hideDeviceOverlay();
+        const currentBarrierStatus = barrierElement.querySelector('.power-status').textContent;
+        const newBarrierStatus = !currentBarrierStatus.includes('On');
+
+        try {
+            const response = await fetch('/barrier', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: newBarrierStatus })
+            });
+            console.log(response);
+            
+            if (response.ok) {
+                barrierElement.querySelector('.power-status').textContent = newBarrierStatus ? 'On' : 'Off';
+                barrierElement.classList.toggle('power-status--active');
+            }
+            else {
+                console.error('Failed to update barrier status');
+            }
+        } catch (error) {
+            console.error('Failed to update barrier status', error);
+        }
     });
+
     device_confirmNoButton.addEventListener('click', () => {
         hideDeviceOverlay();
     });
+
+    barrierElement.addEventListener('click', showDeviceOverlay);
+
     document.querySelectorAll('.device-detail .power').forEach((powerButton) => {
         powerButton.addEventListener('click', showDeviceOverlay);
     });

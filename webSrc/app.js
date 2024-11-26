@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const expressLayouts = require('express-ejs-layouts');
@@ -11,6 +12,7 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Middleware
 app.use(expressLayouts);
+app.use(express.json());
 
 // Routes
 app.use('/', mainRoutes);

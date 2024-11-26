@@ -9,7 +9,7 @@ const profileController = require('../controllers/profileController');
 const notificationController = require('../controllers/notificationController');
 const chatbotController = require('../controllers/chatbotController');
 
-router.get('/', dashboardController);
+router.get('/', dashboardController.dashboardController);
 router.get('/parkinglog', parkinglogController);
 router.get('/setting', settingsController);
 router.get('/login', login);
@@ -19,5 +19,7 @@ router.get('/reset-password', resetPass);
 router.get('/profile', profileController);
 router.get('/notification', notificationController);
 router.get('/chatbot', chatbotController);
+
+router.post('/barrier', dashboardController.toggleBarrier);
 
 module.exports = router;
