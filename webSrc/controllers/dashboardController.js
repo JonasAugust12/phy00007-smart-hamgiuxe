@@ -62,7 +62,7 @@ const toggleBarrier = async (req, res) => {
         const ref = db.ref('BARRIER');
 
         await ref.child('state').set(status);
-        res.status(200).json({message: 'Barrier status updated', barrier});
+        res.status(200).json({message: 'Barrier status updated'});
     } catch (error) {
         console.error(error);
         res.status(500).json({message: 'An error occurred'});
