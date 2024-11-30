@@ -1,15 +1,18 @@
-const emailAlert = 'On';
-const mobileReport = 'Off';
-const emailReport = 'Off';
+let settingController = {};
 
-const settingController = (req, res) => {
+settingController.renderSettingPage = (req, res) => {
     res.render('setting', {
         title: 'Setting',
         layout: 'layouts/main',
-        emailAlert,
-        mobileReport,
-        emailReport,
+        user: req.session.user,
     });
 }
+
+settingController.updateSetting = (req, res) => {
+    const { settingId, status } = req.body;
+    
+    req.session.user[settingId] = status;
+    res.status(200).send({ message: 'Setting updated successfully' });
+};
 
 module.exports = settingController;

@@ -1,7 +1,7 @@
 <div class="device">
     <div id="device-overlay" class="overlay">
         <div id="device-confirm" class="confirm-box">
-            <p>Are you sure you want to turn off the device?</p>
+            <p class="confirm-message"></p>
             <div class="confirm-btn">
                 <button id="device-yes" class="confirm-yes">Yes</button>
                 <button id="device-no" class="confirm-no">No</button>
@@ -64,44 +64,52 @@
         </div>
     </div>
 </div>
-<script>
+<script type="module">
+    import { database, ref, update } from "./js/firebase-config.js";
     const device_overlay = document.getElementById('device-overlay');
     const device_confirmYesButton = document.getElementById('device-yes');
     const device_confirmNoButton = document.getElementById('device-no');
     const barrierElement = document.getElementById('barrier');
+    const sirenElement = document.getElementById('siren');
 
-    function showDeviceOverlay() {
+    let selectedDevice = null;
+    function getNewDeviceStatus(device) {
+        const currentStatus = device.querySelector('.power-status').textContent;
+        return currentStatus.includes('On') ? 'Off' : 'On';
+    }
+    function updateConfirmMessage(device, newStatus) {
+        const confirmMessage = document.querySelector('.confirm-message');
+        confirmMessage.textContent = `Are you sure you want to turn ${newStatus.toLowerCase()} the device?`;
+    }
+    function showDeviceOverlay(device) {
+        selectedDevice = device;
         device_overlay.style.display = 'flex';
         document.body.style.overflow = 'hidden';
+
+        const newDeviceStatus = getNewDeviceStatus(device);
+        updateConfirmMessage(device, newDeviceStatus);
     }
     function hideDeviceOverlay() {
         device_overlay.style.display = 'none';
         document.body.style.overflow = 'auto';
     }
+
     device_confirmYesButton.addEventListener('click', async () => {
         hideDeviceOverlay();
-        const currentBarrierStatus = barrierElement.querySelector('.power-status').textContent;
-        const newBarrierStatus = !currentBarrierStatus.includes('On');
+        const newDeviceStatus = getNewDeviceStatus(selectedDevice);
+        let deviceRef;
+        if (selectedDevice.id === 'barrier') {
+            deviceRef = ref(database, 'BARRIER');
+        } else if (selectedDevice.id === 'siren') {
+            deviceRef = ref(database, 'SIREN');
+        }
 
         try {
-            const response = await fetch('/barrier', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ status: newBarrierStatus })
-            });
-            console.log(response);
-            
-            if (response.ok) {
-                barrierElement.querySelector('.power-status').textContent = newBarrierStatus ? 'On' : 'Off';
-                barrierElement.classList.toggle('power-status--active');
-            }
-            else {
-                console.error('Failed to update barrier status');
-            }
+            await update(deviceRef, { state: newDeviceStatus === 'On' });
+            selectedDevice.querySelector('.power-status').textContent = newDeviceStatus;
+            selectedDevice.classList.toggle('power-status--active');
         } catch (error) {
-            console.error('Failed to update barrier status', error);
+            console.error(`Failed to update ${selectedDevice.id} status`, error);
         }
     });
 
@@ -109,10 +117,14 @@
         hideDeviceOverlay();
     });
 
-    barrierElement.addEventListener('click', showDeviceOverlay);
+    barrierElement.addEventListener('click', () => showDeviceOverlay(barrierElement));
+    sirenElement.addEventListener('click', () => showDeviceOverlay(sirenElement));
 
     document.querySelectorAll('.device-detail .power').forEach((powerButton) => {
-        powerButton.addEventListener('click', showDeviceOverlay);
+        powerButton.addEventListener('click', (event) => {
+            const device = event.target.closest('.device-detail').querySelector('.power');
+            showDeviceOverlay(device);
+        });
     });
 
     // update time
@@ -125,5 +137,4 @@
     }
     setInterval(updateTime, 1000);
     updateTime();
-
 </script>

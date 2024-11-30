@@ -26,8 +26,6 @@ FirebaseApp app;
 RealtimeDatabase Database;
 LegacyToken dbSecret(DATABASE_SECRET);
 
-bool ledState = false;
-
 // GATE
 int in_trig = 33;
 int in_echo = 34;
@@ -51,9 +49,8 @@ Servo servo;
 WiFiClient espClient;
 
 // REAL TIME
-#define UTC_OFFSET     7 * 3600
+#define UTC_OFFSET 7 * 3600
 #define UTC_OFFSET_DST 0
-
 
 // GATE SYSTEM
 bool isGateActive = true;
@@ -76,24 +73,30 @@ bool isOutSensorExist = false;
 #define TEMPERATURE_THRESHOLD 70
 const float BETA = 3950;
 
+bool isSirenActive = false;
 bool isFireDetected = false;
 bool isSmokeDetected = false;
 bool isEmergencyPressed = false;
 
+float temperature = 0;
+unsigned long lastTemperatureUpdate = 0;
 unsigned long pressTime = 0;
 unsigned long ledActiveTime = 0;
 unsigned long previousMillis = 0;
 const long interval = 50;
+const unsigned long tempInterval = 60000 * 5;
 int freq = 1000;
-bool holdButton = false;
 
 // PARKING LOT
 String receivedMessage = "";
 int slotLeft = 3;
 
-bool isKeyExist(JsonObject obj, const char* key) {
-  for (auto kvp : obj) {
-    if (strcmp(kvp.key().c_str(), key) == 0) {
+bool isKeyExist(JsonObject obj, const char *key)
+{
+  for (auto kvp : obj)
+  {
+    if (strcmp(kvp.key().c_str(), key) == 0)
+    {
       return true;
     }
   }
@@ -132,7 +135,7 @@ void setupFirebase()
   initializeApp(aClient2, app, getAuth(dbSecret), asyncCB, "authTask");
   app.getApp<RealtimeDatabase>(Database);
   Database.url(DATABASE_URL);
-  
+
   Database.get(aClient2, "/", asyncCB, false, "initTask");
 
   Database.setSSEFilters("put,patch");
@@ -181,12 +184,13 @@ void printResult(AsyncResult &aResult)
         isGateActive = barrierState;
       }
 
-
+      if (RTDB.dataPath() == "/SIREN/state")
+      {
+        bool sirenState = RTDB.to<bool>();
+        isSirenActive = sirenState;
+      }
 
       // FETCH OTHER STREAM DATA HERE
-
-
-
     }
     else
     {
@@ -211,13 +215,13 @@ void printResult(AsyncResult &aResult)
           carCountInDay = car["carInDay"];
           carCountInMonth = car["carInMonth"];
         }
-
-
+        if (isKeyExist(doc.as<JsonObject>(), "SIREN"))
+        {
+          JsonObject siren = doc["SIREN"];
+          isSirenActive = siren["state"];
+        }
 
         // FETCH OTHER INIT DATA HERE
-
-
-
       }
     }
 
@@ -225,12 +229,15 @@ void printResult(AsyncResult &aResult)
   }
 }
 
-void setupNTP() {
+void setupNTP()
+{
   configTime(UTC_OFFSET, UTC_OFFSET_DST, "asia.pool.ntp.org", "time.google.com", "pool.ntp.org");
   Serial.print("Syncing time...");
   struct tm timeinfo;
-  for (int i = 0; i < 10; i++) { // Retry 10 times
-    if (getLocalTime(&timeinfo)) {
+  for (int i = 0; i < 10; i++)
+  { // Retry 10 times
+    if (getLocalTime(&timeinfo))
+    {
       Serial.println("");
       Serial.println("Time synchronized successfully");
       Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
@@ -239,7 +246,8 @@ void setupNTP() {
     delay(500); // Wait before retrying
     Serial.print(".");
   }
-  if (time(nullptr) <= 0) {
+  if (time(nullptr) <= 0)
+  {
     Serial.println(" Failed to obtain time.");
   }
 }
@@ -298,9 +306,13 @@ void loop()
     handleGateFlow(out_trig, out_echo, isGateOutOpened, isOutSensorExist, isPassingOut, startPassingOutTime, "Exit");
   }
 
-  if (app.ready() && isCarEntered)
+  if (app.ready())
   {
-    updateCarCount();
+    updateTemperature();
+    if (isCarEntered)
+    {
+      updateCarCount();
+    }
   }
   handleFireProtection();
   handleParkingLot();
@@ -316,7 +328,6 @@ void loop()
   static String lastPayload = "";
 
   delay(100);
-  
 }
 
 void updateCarCount()
@@ -428,9 +439,25 @@ long getDistance(int trig, int echo)
   return distance_cm;
 }
 
+void updateTemperature()
+{
+  unsigned long currentMillis = millis();
+  float currentTemperature = getTemperature(temp_sensor);
+  if (currentMillis - lastTemperatureUpdate >= tempInterval || abs(currentTemperature - temperature) > 1)
+  {
+    lastTemperatureUpdate = currentMillis;
+    JsonWriter writer;
+    object_t TEMPERATURE, value;
+
+    writer.create(value, "value", currentTemperature);
+    writer.join(TEMPERATURE, 1, value);
+    Database.set<object_t>(aClient2, "/TEMPERATURE", TEMPERATURE, asyncCB, "tempTask");
+  }
+}
+
 void handleFireProtection()
 {
-  float temperture = getTemperature(temp_sensor);
+  temperature = getTemperature(temp_sensor);
   int smokeValue = analogRead(smoke_sensor);
   int buttonState = digitalRead(button);
 
@@ -454,7 +481,7 @@ void handleFireProtection()
     isFireDetected = false;
   }
 
-  if (isSmokeDetected && temperture > TEMPERATURE_THRESHOLD)
+  if (isSmokeDetected && temperature > TEMPERATURE_THRESHOLD)
   {
     isFireDetected = true;
   }
@@ -463,7 +490,7 @@ void handleFireProtection()
     isFireDetected = false;
   }
 
-  if (isSmokeDetected || isEmergencyPressed)
+  if (isSmokeDetected || isEmergencyPressed || isSirenActive)
   {
     activateAlarm();
   }

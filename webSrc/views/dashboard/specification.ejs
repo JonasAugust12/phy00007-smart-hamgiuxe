@@ -7,7 +7,21 @@
                     d="M8 5C8 2.79086 9.79086 1 12 1C14.2091 1 16 2.79086 16 5V10.2547C17.8135 11.5196 19 13.6213 19 16C19 19.866 15.866 23 12 23C8.13401 23 5 19.866 5 16C5 13.6213 6.18652 11.5196 8 10.2547V5ZM9.1442 11.8951C7.80943 12.8261 7 14.3432 7 16C7 18.7614 9.23858 21 12 21C14.7614 21 17 18.7614 17 16C17 14.3432 16.1906 12.8261 14.8558 11.8951L14 11.2981V5C14 3.89543 13.1046 3 12 3C10.8954 3 10 3.89543 10 5V11.2981L9.1442 11.8951ZM8 16H16C16 18.2091 14.2091 20 12 20C9.79086 20 8 18.2091 8 16Z">
                 </path>
             </svg>
-            <p class="data-value"> <%= temperature %>°C</p>
+            <p class="data-value temperature"> <%= temperature %>°C</p>
+        </div>
+    </div>
+    <div class="environmental-data" style="background: linear-gradient(to left, #3a7bd5, #3a6073);">
+        <p class="data-title">Available slots</p>
+        <div class="data-container">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#fff">
+                <path
+                    d="M3 19.723V21a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h12v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1.277A1.99 1.99 0 0 0 22 18v-3c0-.831-.507-1.542-1.228-1.845l-1.368-4.104A2.995 2.995 0 0 0 16.559 7H7.441a2.995 2.995 0 0 0-2.845 2.051l-1.368 4.104A2.001 2.001 0 0 0 2 15v3c0 .738.404 1.376 1 1.723zM5.5 18a1.5 1.5 0 1 1 .001-3.001A1.5 1.5 0 0 1 5.5 18zm13 0a1.5 1.5 0 1 1 .001-3.001A1.5 1.5 0 0 1 18.5 18zM7.441 9h9.117a1 1 0 0 1 .949.684L18.613 13H5.387l1.105-3.316c.137-.409.519-.684.949-.684z">
+                </path>
+                <path d="M22 7.388V5.279l-9.684-3.228a.996.996 0 0 0-.658.009L2 5.572V7.7l10.015-3.642L22 7.388z"></path>
+            </svg>
+            <p class="data-value dailyVehicle">
+                <%= dailyVehicleCount %>
+            </p>
         </div>
     </div>
     <div class="environmental-data" style="background: linear-gradient(230deg, #759bff, #843cf6);">
@@ -18,7 +32,7 @@
                     d="M19 20H5V21C5 21.5523 4.55228 22 4 22H3C2.44772 22 2 21.5523 2 21V12L4.51334 5.29775C4.80607 4.51715 5.55231 4 6.386 4H17.614C18.4477 4 19.1939 4.51715 19.4867 5.29775L22 12V21C22 21.5523 21.5523 22 21 22H20C19.4477 22 19 21.5523 19 21V20ZM4.136 12H19.864L17.614 6H6.386L4.136 12ZM6.5 17C7.32843 17 8 16.3284 8 15.5C8 14.6716 7.32843 14 6.5 14C5.67157 14 5 14.6716 5 15.5C5 16.3284 5.67157 17 6.5 17ZM17.5 17C18.3284 17 19 16.3284 19 15.5C19 14.6716 18.3284 14 17.5 14C16.6716 14 16 14.6716 16 15.5C16 16.3284 16.6716 17 17.5 17Z">
                 </path>
             </svg>
-            <p class="data-value"> <%= dailyVehicleCount %></p>
+            <p class="data-value dailyVehicle"> <%= dailyVehicleCount %></p>
         </div>
     </div>
     <div class="environmental-data" style="background: linear-gradient(to right, #c33764, #1d2671);">
@@ -29,7 +43,27 @@
                     d="M19 21H5V22C5 22.5523 4.55228 23 4 23H3C2.44772 23 2 22.5523 2 22V13L4.4174 8.97099C4.77884 8.36858 5.42986 7.99998 6.13238 7.99998H17.8676C18.5701 7.99998 19.2212 8.36858 19.5826 8.97099L22 13V22C22 22.5523 21.5523 23 21 23H20C19.4477 23 19 22.5523 19 22V21ZM4.33238 13H19.6676L17.8676 9.99998H6.13238L4.33238 13ZM6.5 18C7.32843 18 8 17.3284 8 16.5C8 15.6716 7.32843 15 6.5 15C5.67157 15 5 15.6716 5 16.5C5 17.3284 5.67157 18 6.5 18ZM17.5 18C18.3284 18 19 17.3284 19 16.5C19 15.6716 18.3284 15 17.5 15C16.6716 15 16 15.6716 16 16.5C16 17.3284 16.6716 18 17.5 18ZM5.43934 3.43932L6.5 2.37866L7.56066 3.43932C7.83211 3.71077 8 4.08577 8 4.49998C8 5.32841 7.32843 5.99998 6.5 5.99998C5.67157 5.99998 5 5.32841 5 4.49998C5 4.08577 5.16789 3.71077 5.43934 3.43932ZM10.9393 3.43932L12 2.37866L13.0607 3.43932C13.3321 3.71077 13.5 4.08577 13.5 4.49998C13.5 5.32841 12.8284 5.99998 12 5.99998C11.1716 5.99998 10.5 5.32841 10.5 4.49998C10.5 4.08577 10.6679 3.71077 10.9393 3.43932ZM16.4393 3.43932L17.5 2.37866L18.5607 3.43932C18.8321 3.71077 19 4.08577 19 4.49998C19 5.32841 18.3284 5.99998 17.5 5.99998C16.6716 5.99998 16 5.32841 16 4.49998C16 4.08577 16.1679 3.71077 16.4393 3.43932Z">
                 </path>
             </svg>
-            <p class="data-value"> <%= weeklyVehicleCount %></p>
+            <p class="data-value weeklyVehicle"> <%= weeklyVehicleCount %></p>
         </div>
     </div>
 </div>
+
+<script type="module">
+    import { database, ref, onValue, set, update } from "./js/firebase-config.js";
+    const temperatureRef = ref(database, 'TEMPERATURE');
+    const carRef = ref(database, 'CAR');
+
+    onValue(temperatureRef, (snapshot) => {
+        const data = snapshot.val();
+        const temperature = data.value;
+        document.querySelector('.temperature').textContent = `${temperature}°C`;
+    });
+
+    onValue(carRef, (snapshot) => {
+        const data = snapshot.val();
+        const dailyVehicleCount = data.carInDay;
+        const weeklyVehicleCount = data.carInMonth;
+        document.querySelector('.dailyVehicle').textContent = dailyVehicleCount;
+        document.querySelector('.weeklyVehicle').textContent = weeklyVehicleCount;
+    });
+</script>

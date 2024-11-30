@@ -1,4 +1,26 @@
+<% const settingBtn = {
+    active: {
+        fill: '#28a745',
+        path: 'M10 15.17L19.19 5.98l1.41 1.41L10 18 3.64 11.64l1.41-1.41L10 15.17z'
+    },
+    inactive: {
+        fill: 'red',
+        path: 'M12 10.59l4.95-4.95 1.41 1.41L13.41 12l4.95 4.95-1.41 1.41L12 13.41l-4.95 4.95-1.41-1.41L10.59 12 5.64 7.05 7.05 5.64 12 10.59z'
+    }
+} %>
+
 <div class="setting">
+    <div id="setting-overlay" class="overlay">
+        <div id="setting-confirm" class="confirm-box">
+            <p class="confirm-message"></p>
+            <div class="confirm-btn">
+                <button id="setting-yes" class="confirm-yes">Yes</button>
+                <button id="setting-no" class="confirm-no">No</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emergency Alert for Phone (Always inactive for this example) -->
     <div class="setting-item">
         <div class="setting-text">
             <p class="setting-title">Emergency Alert for Phone</p>
@@ -10,69 +32,124 @@
             </svg>
         </div>
     </div>
+
+    <!-- Emergency Alert for Email -->
     <div class="setting-item">
         <div class="setting-text">
             <p class="setting-title">Emergency Alert for Email</p>
-            <p class="setting-description">Receive alerts via email when the sensor detects a fire or
-                flood</p>
+            <p class="setting-description">Receive alerts via email when the sensor detects a fire or flood</p>
         </div>
-        <% if (emailAlert === 'On') { %>
-            <div class="setting-action">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#28a745">
-                    <path d="M10 15.17L19.19 5.98l1.41 1.41L10 18 3.64 11.64l1.41-1.41L10 15.17z"></path>
-                </svg>
-            </div>
-        <% } else { %>
-            <div class="setting-action">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="red">
-                    <path
-                        d="M12 10.59l4.95-4.95 1.41 1.41L13.41 12l4.95 4.95-1.41 1.41L12 13.41l-4.95 4.95-1.41-1.41L10.59 12 5.64 7.05 7.05 5.64 12 10.59z">
-                    </path>
-                </svg>
-            </div>
-        <% } %>
+        <% let emailSetting = user.emergencyEmail ? settingBtn.active : settingBtn.inactive %>
+        <div class="setting-action" id="emergencyEmail">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="<%= emailSetting.fill %>">
+                <path d="<%= emailSetting.path %>"></path>
+            </svg>
+        </div>
     </div>
+
+    <!-- Daily Vehicle Count Report via Email -->
     <div class="setting-item">
         <div class="setting-text">
             <p class="setting-title">Daily Vehicle Count Report via Email</p>
             <p class="setting-description">Automatically send daily vehicle count reports via email</p>
         </div>
-        <% if (emailReport === 'On') { %>
-            <div class="setting-action">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#28a745">
-                    <path d="M10 15.17L19.19 5.98l1.41 1.41L10 18 3.64 11.64l1.41-1.41L10 15.17z"></path>
-                </svg>
-            </div>
-        <% } else { %>
-            <div class="setting-action">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="red">
-                    <path
-                        d="M12 10.59l4.95-4.95 1.41 1.41L13.41 12l4.95 4.95-1.41 1.41L12 13.41l-4.95 4.95-1.41-1.41L10.59 12 5.64 7.05 7.05 5.64 12 10.59z">
-                    </path>
-                </svg>
-            </div>
-        <% } %>
+        <% let emailReportSetting = user.dailyEmail ? settingBtn.active : settingBtn.inactive %>
+        <div class="setting-action" id="dailyEmail">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="<%= emailReportSetting.fill %>">
+                <path d="<%= emailReportSetting.path %>"></path>
+            </svg>
+        </div>
     </div>
+
+    <!-- Daily Vehicle Count Report via SMS -->
     <div class="setting-item">
         <div class="setting-text">
-            <p class="setting-title">Daily Vehicle Count Report via Mobile</p>
-            <p class="setting-description">Automatically send daily vehicle count reports via mobile
-                phone</p>
+            <p class="setting-title">Daily Vehicle Count Report via SMS</p>
+            <p class="setting-description">Automatically send daily vehicle count reports via SMS</p>
         </div>
-        <% if (mobileReport === 'On') { %>
-            <div class="setting-action">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#28a745">
-                    <path d="M10 15.17L19.19 5.98l1.41 1.41L10 18 3.64 11.64l1.41-1.41L10 15.17z"></path>
-                </svg>
-            </div>
-        <% } else { %>
-            <div class="setting-action">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="red">
-                    <path
-                        d="M12 10.59l4.95-4.95 1.41 1.41L13.41 12l4.95 4.95-1.41 1.41L12 13.41l-4.95 4.95-1.41-1.41L10.59 12 5.64 7.05 7.05 5.64 12 10.59z">
-                    </path>
-                </svg>
-            </div>
-        <% } %>
+        <% let smsReportSetting = user.dailySMS ? settingBtn.active : settingBtn.inactive %>
+        <div class="setting-action" id="dailySMS">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="<%= smsReportSetting.fill %>">
+                <path d="<%= smsReportSetting.path %>"></path>
+            </svg>
+        </div>
     </div>
 </div>
+
+
+<script type="module">
+   import { auth, firestore, updateDoc, doc } from "./js/firebase-config.js";
+
+    const settingOverlay = document.getElementById('setting-overlay');
+    const settingConfirmYesButton = document.getElementById('setting-yes');
+    const settingConfirmNoButton = document.getElementById('setting-no');
+    const settingItems = document.querySelectorAll('.setting-item .setting-action');
+    let selectedSettingId = null;
+    let selectedSettingStatus = null;
+
+    function showSettingOverlay(settingId, currentStatus) {
+        selectedSettingId = settingId;
+        selectedSettingStatus = currentStatus;
+
+        const confirmMessage = document.querySelector('.confirm-message');
+        confirmMessage.textContent = `Are you sure you want to turn ${currentStatus ? 'off' : 'on'} this setting?`;
+
+        settingOverlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function hideSettingOverlay() {
+        settingOverlay.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    settingConfirmYesButton.addEventListener('click', async () => {
+        hideSettingOverlay();
+        const user = auth.currentUser;
+        const newStatus = !selectedSettingStatus;
+        const settingRef = doc(firestore, "users", user.uid);
+
+        try {
+            await updateDoc(settingRef, {
+                [selectedSettingId]: newStatus
+            });
+
+            const settingElement = document.getElementById(selectedSettingId);
+            const svg = settingElement.querySelector('svg');
+
+            if (newStatus) {
+                svg.setAttribute('fill', '#28a745');
+                const path = svg.querySelector('path');
+                path.setAttribute('d', 'M10 15.17L19.19 5.98l1.41 1.41L10 18 3.64 11.64l1.41-1.41L10 15.17z');
+            } else {
+                svg.setAttribute('fill', 'red');
+                const path = svg.querySelector('path');
+                path.setAttribute('d', 'M12 10.59l4.95-4.95 1.41 1.41L13.41 12l4.95 4.95-1.41 1.41L12 13.41l-4.95 4.95-1.41-1.41L10.59 12 5.64 7.05 7.05 5.64 12 10.59z');
+            }
+
+            const response = await fetch('/update-setting', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    settingId: selectedSettingId,
+                    status: newStatus
+                })
+            });
+        } catch (error) {
+            console.error('Error updating setting in Firestore:', error);
+        }
+    });
+
+    settingConfirmNoButton.addEventListener('click', () => {
+        hideSettingOverlay();
+    });
+
+    settingItems.forEach((setting) => {
+        setting.addEventListener('click', (e) => {
+            const settingId = e.currentTarget.id; 
+            const currentStatus = e.currentTarget.querySelector('svg').getAttribute('fill') === '#28a745'; 
+            showSettingOverlay(settingId, currentStatus);
+        });
+    });
+
+</script>

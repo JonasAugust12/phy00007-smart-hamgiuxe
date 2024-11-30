@@ -11,7 +11,7 @@ const notifications = [
 <nav>
     <div id="log-out-overlay" class="overlay">
         <div id="log-out-confirm" class="confirm-box">
-            <p>Are you sure you want to turn off the device?</p>
+            <p>Are you sure you want to log out?</p>
             <div class="confirm-btn">
                 <button id="log-out-yes" class="confirm-yes">Yes</button>
                 <button id="log-out-no" class="confirm-no">No</button>
@@ -63,7 +63,9 @@ const notifications = [
 </nav>
 
 
-<script>
+<script type="module">
+    import { auth, signOut } from "./js/firebase-config.js";
+
     // Notification button
     document.getElementById('notification-btn').addEventListener('click', function (event) {
         event.stopPropagation(); // Prevent click event from propagating to document
@@ -99,6 +101,7 @@ const notifications = [
         document.body.style.overflow = 'auto';
     }
     logout_confirmYesButton.addEventListener('click', () => {
+        signOut(auth);
         window.location.href = '/login';
         hideLogoutOverlay();
     });

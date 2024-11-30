@@ -34,7 +34,7 @@ nav {
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 1;
+    z-index: 2;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -326,7 +326,7 @@ main {
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 1;
+    z-index: 2;
     width: 100%;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.5);
@@ -449,8 +449,8 @@ main {
 
 .specifications {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8rem;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3rem;
     width: 100%;
 }
 
@@ -798,6 +798,15 @@ main {
     margin-top: 1rem;
 }
 
+.update-err {
+    
+    color: #ff0000;
+    font-size: 14px;
+    font-weight: 500;
+    padding-left: 10px;
+    margin: 10px 0 0px;
+}
+
 .change__info-box {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -852,7 +861,7 @@ main {
     position: relative;
     overflow: hidden;
     font-size: 1.5rem;
-    margin-top: 2rem;
+    margin-top: 1rem;
     cursor: pointer;
 }
 

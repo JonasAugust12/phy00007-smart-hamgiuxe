@@ -23,8 +23,7 @@
             </li>
             <li class="pagination-btn" onclick="window.location.href='/parkinglog?page=<%= totalPages %>'"><%= totalPages %></li>
         <% } %>
-
-        <li class="pagination-next" onclick="window.location.href='/parkinglog?page=<%= currentPage + 1 %>'" <% if (currentPage === totalPages) { %>style="visibility: hidden;"<% } %> >&gt;</li>
+        <li class="pagination-next" onclick="window.location.href='/parkinglog?page=<%= currentPage + 1 %>'" <% if (currentPage === totalPages  || parkinglogData.length  === 0) { %>style="visibility: hidden;"<% } %> >&gt;</li>
     </ul>
 </div>
 

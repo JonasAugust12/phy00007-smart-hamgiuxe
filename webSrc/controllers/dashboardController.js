@@ -1,75 +1,44 @@
-const parkinglogData = [
-    {
-        parkingLocation: 'Section 1',
-        entryDate: '15-08-2019',
-        checkInTime: '12:51',
-        checkOutTime: '1:20'
-    },
-    {
-        parkingLocation: 'Section 1',
-        entryDate: '15-08-2019',
-        checkInTime: '12:51',
-        checkOutTime: '1:20'
-    },
-    {
-        parkingLocation: 'Section 1',
-        entryDate: '15-08-2019',
-        checkInTime: '12:51',
-        checkOutTime: '1:20'
-    },
-    {
-        parkingLocation: 'Section 1',
-        entryDate: '15-08-2019',
-        checkInTime: '12:51',
-        checkOutTime: '1:20'
-    },
-    {
-        parkingLocation: 'Section 1',
-        entryDate: '15-08-2019',
-        checkInTime: '12:51',
-        checkOutTime: '1:20'
-    }
-]
-const siren = 'Off';
-const temperature = 25;
-
-const db = require('../config/firebase');
-let data = {};
-
-db.ref('/').on('value', (snapshot) => {
-    data = snapshot.val();
-});
+const { db, firestoreDB } = require('../config/firebase');
 
 const dashboardController = async (req, res) => {
-    const {BARRIER, CAR} = data;
+    const snapshot = await db.ref('/').get();
+    data = snapshot.val();
+
+    const {BARRIER, CAR, TEMPERATURE, SIREN} = data;
     const {state: barrier} = BARRIER;
+    const {state: siren} = SIREN;
+    const {value: temperature} = TEMPERATURE;
     const {carInDay: dailyVehicleCount, carInMonth: weeklyVehicleCount} = CAR;
-    res.render('dashboard', {
-        title: 'Dashboard',
-        layout: 'layouts/main',
-        parkinglogData,
-        barrier : barrier ? 'On' : 'Off',
-        siren,
-        temperature,
-        dailyVehicleCount,
-        weeklyVehicleCount
-    });
+     firestoreDB.collection('Parking').get()
+        .then((querySnapshot) => {
+            const parkingArray = [];
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                parkingArray.push({
+                    parkingLocation: `Lot ${data.lot || 'Unknown'}`,
+                    entryDate: data.checkin ? data.checkin.split(' ').slice(1, 3).join(' ') : 'Unknown',
+                    exitDate: data.checkout ? data.checkout.split(' ').slice(1, 3).join(' ') : 'Unknown',
+                    checkInTime: data.checkin ? data.checkin.split(' ')[3] : 'Unknown',
+                    checkOutTime: data.checkout ? data.checkout.split(' ')[3] : 'Unknown',
+                });
+            });
+
+            res.render('dashboard', {
+                title: 'Dashboard',
+                layout: 'layouts/main',
+                user: req.session.user,
+                parkinglogData: parkingArray.reverse(),
+                barrier: barrier ? 'On' : 'Off',
+                siren: siren ? 'On' : 'Off',
+                temperature,
+                dailyVehicleCount,
+                weeklyVehicleCount
+            });
+        })
+        .catch((error) => {
+            console.error('Error fetching parking data:', error);
+            res.status(500).send('Error fetching parking data');
+        });
 }
 
-const toggleBarrier = async (req, res) => {
-    try {
-        const {status} = req.body;
-        const ref = db.ref('BARRIER');
-
-        await ref.child('state').set(status);
-        res.status(200).json({message: 'Barrier status updated'});
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({message: 'An error occurred'});
-    }
-}
-
-module.exports = {
-    dashboardController,
-    toggleBarrier
-};
+module.exports = dashboardController;
