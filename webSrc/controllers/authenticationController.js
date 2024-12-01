@@ -29,6 +29,16 @@ authenticationController.verifyToken = async (req, res) => {
     }
 };
 
+authenticationController.logout = (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error("Failed to destroy session:", err);
+            return res.status(500).send({ message: "Error logging out" });
+        }
+        res.status(200).send({ message: "Logged out successfully" });
+    });
+}
+
 authenticationController.register = (req, res) => {
     res.render('authentication/register', {
         layout: 'layouts/auth',

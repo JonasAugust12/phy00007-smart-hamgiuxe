@@ -27,6 +27,7 @@ const dashboardController = async (req, res) => {
                 title: 'Dashboard',
                 layout: 'layouts/main',
                 user: req.session.user,
+                notification: req.session.user.notifications,
                 parkinglogData: parkingArray.reverse(),
                 barrier: barrier ? 'On' : 'Off',
                 siren: siren ? 'On' : 'Off',

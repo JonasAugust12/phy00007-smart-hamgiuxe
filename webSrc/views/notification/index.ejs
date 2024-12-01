@@ -1,27 +1,17 @@
-<% 
-const notifications = [
-    { type: 'Alert', date: '2024-11-20' },
-    { type: 'Daily Report', date: '2024-11-21', vehicleCount: 500 },
-    { type: 'Weekly Report', date: '2024-W47', vehicleCount: 3500 },
-    { type: 'Alert', date: '2024-11-22' },
-    { type: 'Daily Report', date: '2024-11-23', vehicleCount: 600 }
-]; 
-%>
-
 <div class="notification-wrapper">
     <ul class="notification-list">
         <% notifications.forEach((notification) => { %>
-            <% if (notification.type === 'Alert') { %>
+            <% if (notification.type === 'alarm') { %>
                 <li class="notification-item">
-                    Fire alarm triggered on <%= notification.date %>
+                    Fire alarm triggered on <%= notification.createdAt %>
                 </li>
-            <% } else { %>
+            <% } else if (notification.type === 'dailyVehicle') { %>
                 <li class="notification-item">
-                    <% if (notification.type === 'Daily Report') { %>
-                        Daily car count on <%= notification.date %>: <%= notification.vehicleCount %> cars
-                    <% } else if (notification.type === 'Weekly Report') { %>
-                        Weekly car count for week <%= notification.date %>: <%= notification.vehicleCount %> cars
-                    <% } %>
+                    Daily car count on <%= notification.createdAt %>: <%= notification.value %> car(s)
+                </li>
+            <% } else if (notification.type === 'monthlyVehicle') { %> 
+                <li class="notification-item">
+                    Monthly car count on <%= notification.createdAt %>: <%= notification.value %> car(s)
                 </li>
             <% } %>
         <% }); %>

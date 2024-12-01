@@ -5,6 +5,7 @@ settingController.renderSettingPage = (req, res) => {
         title: 'Setting',
         layout: 'layouts/main',
         user: req.session.user,
+        notification: req.session.user.notifications,
     });
 }
 

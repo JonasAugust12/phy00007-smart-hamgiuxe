@@ -5,6 +5,7 @@ profileController.renderProfilePage = (req, res) => {
         title: 'Profile',
         layout: 'layouts/main',
         user: req.session.user,
+        notification: req.session.user.notifications,
     });
 };
 

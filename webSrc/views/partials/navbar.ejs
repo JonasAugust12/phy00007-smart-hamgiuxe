@@ -1,13 +1,3 @@
-<% 
-const notifications = [
-    { type: 'Alert', date: '2024-11-20' },
-    { type: 'Daily Report', date: '2024-11-21', vehicleCount: 500 },
-    { type: 'Weekly Report', date: '2024-W47', vehicleCount: 3500 },
-    { type: 'Alert', date: '2024-11-22' },
-    { type: 'Daily Report', date: '2024-11-23', vehicleCount: 600 }
-]; 
-%>
-
 <nav>
     <div id="log-out-overlay" class="overlay">
         <div id="log-out-confirm" class="confirm-box">
@@ -32,14 +22,14 @@ const notifications = [
             <div class="noti-box" id="noti-box">
                 <div class="noti-title">Notifications</div>
                 <div class="noti-list">
-                    <% notifications.forEach((notification)=> { %>
+                    <% notification.forEach((noti)=> { %>
                         <div class="noti-item">
-                            <% if (notification.type==='Alert' ) { %>
-                                Fire alarm triggered on <%= notification.date %>
-                            <% } else if (notification.type==='Daily Report' ) { %>
-                                    Daily car count on <%= notification.date %>: <%= notification.vehicleCount %> cars
-                            <% } else if (notification.type==='Weekly Report' ) { %>
-                                    Weekly car count for week <%= notification.date %>: <%= notification.vehicleCount %> cars
+                            <% if (noti.type === 'alarm') { %>
+                                Fire alarm triggered on <%= noti.createdAt.toLocaleString() %>
+                            <% } else if (noti.type === 'dailyVehicle') { %>
+                                    Daily car count on <%= noti.createdAt.toLocaleDateString() %>: <%= noti.value %> car(s)
+                            <% } else if (noti.type === 'monthlyVehicle') { %>
+                                    Monthly car count for <%= noti.createdAt.getMonth() + 1 %>/<%= noti.createdAt.getFullYear() %>: <%= noti.value %> car(s)
                             <% } %>
                         </div>
                     <% }); %>
@@ -63,8 +53,6 @@ const notifications = [
 </nav>
 
 <script type="module">
-    import { auth, signOut} from "./js/firebase-config.js";
-
     // Notification button
     document.getElementById('notification-btn').addEventListener('click', function (event) {
         event.stopPropagation(); // Prevent click event from propagating to document
@@ -99,10 +87,26 @@ const notifications = [
         logout_overlay.style.display = 'none';
         document.body.style.overflow = 'auto';
     }
-    logout_confirmYesButton.addEventListener('click', () => {
-        signOut(auth);
-        window.location.href = '/login';
-        hideLogoutOverlay();
+    logout_confirmYesButton.addEventListener('click', async () => {
+        try {
+            const response = await fetch('/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            if (response.ok) {
+                window.location.href = '/login';
+            } else {
+                const errorData = await response.json();
+                alert(errorData.message || 'Error logging out');
+            }
+        } catch (error) {
+            console.error("Logout failed:", error);
+            alert('An error occurred while logging out. Please try again.');
+        } finally {
+            hideLogoutOverlay();
+        }
     });
     logout_confirmNoButton.addEventListener('click', () => {
         hideLogoutOverlay();

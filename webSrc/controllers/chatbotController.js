@@ -3,6 +3,7 @@ const chatbotController = (req, res) => {
         layout: 'layouts/main', 
         title: 'Chatbot',
         user: req.session.user,
+        notification: req.session.user.notifications,
     });
 };
 

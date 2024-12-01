@@ -5,6 +5,10 @@ const expressLayouts = require('express-ejs-layouts');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const mainRoutes = require('./routes');
+const alarmNoti  = require('./services/alarmNoti');
+const cron = require('node-cron');
+const dailyTask = require('./services/dailyTask');
+const monthlyTask = require('./services/monthlyTask');
 
 const app = express();
 
@@ -29,6 +33,12 @@ app.use(bodyParser.json());
 app.use('/', mainRoutes);
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+alarmNoti();
+// Schedule daily task at 23:59
+cron.schedule('59 23 * * *', dailyTask.dailyVehicleNoti);
+// Schedule monthly task at 23:02 on the 1st day of every month
+cron.schedule('59 23 1 * *', monthlyTask.monthlyVehicleNoti);
 
 const PORT = 3000;
 app.listen(PORT, () => {

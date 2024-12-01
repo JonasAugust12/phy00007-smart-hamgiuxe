@@ -27,6 +27,7 @@ const parkinglogController = (req, res) => {
                 layout: 'layouts/main',
                 parkinglogData: pageLogs,
                 user: req.session.user,
+                notification: req.session.user.notifications,
                 currentPage,
                 totalPages,
             });

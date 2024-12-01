@@ -9,25 +9,28 @@ const {
     register, 
     forgotPass, 
     resetPass,
-    verifyToken
+    verifyToken,
+    logout
 } = require('../controllers/authenticationController');
 const { renderProfilePage, updateProfile} = require('../controllers/profileController');
 const notificationController = require('../controllers/notificationController');
 const chatbotController = require('../controllers/chatbotController');
 const authenticationMiddleware  = require('../middleware/authenticationMiddleware');
+const fetchNotifications = require('../middleware/notificationMiddleware');
 
 
-router.get('/', authenticationMiddleware, dashboardController);
-router.get('/parkinglog', authenticationMiddleware, parkinglogController);
-router.get('/setting', authenticationMiddleware, renderSettingPage);
-router.get('/profile', authenticationMiddleware, renderProfilePage);
-router.get('/notification', authenticationMiddleware, notificationController);
-router.get('/chatbot', authenticationMiddleware, chatbotController);
+router.get('/', authenticationMiddleware, fetchNotifications, dashboardController);
+router.get('/parkinglog', authenticationMiddleware, fetchNotifications, parkinglogController);
+router.get('/setting', authenticationMiddleware, fetchNotifications, renderSettingPage);
+router.get('/profile', authenticationMiddleware, fetchNotifications, renderProfilePage);
+router.get('/notification', authenticationMiddleware, fetchNotifications, notificationController);
+router.get('/chatbot', authenticationMiddleware, fetchNotifications, chatbotController);
 
 router.get('/login', login);
 router.get('/register', register);
 router.get('/forgot-password', forgotPass);
 router.get('/reset-password', resetPass);
+router.post('/logout', logout);
 
 router.post('/verify-token', verifyToken);
 router.post('/update-profile', updateProfile);
