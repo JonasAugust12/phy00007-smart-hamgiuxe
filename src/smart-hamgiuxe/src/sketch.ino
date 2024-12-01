@@ -221,6 +221,12 @@ void printResult(AsyncResult &aResult)
           isSirenActive = siren["state"];
         }
 
+        if (isKeyExist(doc.as<JsonObject>(), "FIRE"))
+        {
+          JsonObject fire = doc["FIRE"];
+          isFireDetected = fire["state"];
+        }
+
         // FETCH OTHER INIT DATA HERE
       }
     }
@@ -281,6 +287,7 @@ void setup()
   pinMode(led, OUTPUT);
   pinMode(buzzer, OUTPUT);
   pinMode(fire_relay, OUTPUT);
+  digitalWrite(fire_relay, LOW);
   pinMode(smoke_sensor, INPUT);
   LCD.setCursor(0, 0);
   LCD.print("      SMART     ");
@@ -455,6 +462,17 @@ void updateTemperature()
   }
 }
 
+void updateFireDetection()
+{
+  JsonWriter writer;
+  object_t FIRE, state;
+
+  writer.create(state, "state", isFireDetected);
+  writer.join(FIRE, 1, state);
+
+  Database.set<object_t>(aClient2, "/FIRE", FIRE, asyncCB, "fireTask");
+}
+
 void handleFireProtection()
 {
   temperature = getTemperature(temp_sensor);
@@ -483,11 +501,19 @@ void handleFireProtection()
 
   if (isSmokeDetected && temperature > TEMPERATURE_THRESHOLD)
   {
-    isFireDetected = true;
+    if (!isFireDetected)
+    {
+      isFireDetected = true;
+      updateFireDetection();
+    }
   }
   else
   {
-    isFireDetected = false;
+    if (isFireDetected)
+    {
+      isFireDetected = false;
+      updateFireDetection();
+    }
   }
 
   if (isSmokeDetected || isEmergencyPressed || isSirenActive)

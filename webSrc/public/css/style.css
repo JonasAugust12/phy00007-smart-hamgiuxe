@@ -44,6 +44,42 @@ nav {
     box-sizing: border-box;
 }
 
+.alert-background {
+    animation: smooth-blink 2s infinite ease-in-out;
+}
+
+@keyframes smooth-blink {
+    0% {
+        background-color: #f52c2c;
+    }
+
+    50% {
+        background-color: var(--primary-color);
+    }
+
+    100% {
+        background-color: #f52c2c;
+    }
+}
+
+.alert-background-content {
+    animation: smooth-blink-content 2s infinite ease-in-out;
+}
+
+@keyframes smooth-blink-content {
+    0% {
+        background-color: #f77d7d;
+    }
+
+    50% {
+        background-color: var(--background-color);
+    }
+
+    100% {
+        background-color: #f77d7d;
+    }
+}
+
 .logo {
     display: flex;
     justify-content: center;
