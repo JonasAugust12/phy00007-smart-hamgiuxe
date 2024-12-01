@@ -74,7 +74,7 @@
       "id": "serial",
       "top": 0,
       "left": 0,
-      "attrs": { "baud": "9600" }
+      "attrs": { "baud": "115200" }
     },
     {
       "type": "wokwi-led",

@@ -79,7 +79,6 @@ void printCurrentTime(int slot){
   Serial.print(now.second(), DEC); 
 }
 
-
 // Hàm để điều khiển đèn LED theo giá trị cảm biến
 void controlLED(int slot, bool &occupy, int sensorValue, int led_red, int led_green) {
   if (sensorValue == HIGH) {

@@ -14,13 +14,13 @@ const dashboardController = async (req, res) => {
             const parkingArray = [];
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
-                parkingArray.push({
-                    parkingLocation: `Lot ${data.lot || 'Unknown'}`,
-                    entryDate: data.checkin ? data.checkin.split(' ').slice(1, 3).join(' ') : 'Unknown',
-                    exitDate: data.checkout ? data.checkout.split(' ').slice(1, 3).join(' ') : 'Unknown',
-                    checkInTime: data.checkin ? data.checkin.split(' ')[3] : 'Unknown',
-                    checkOutTime: data.checkout ? data.checkout.split(' ')[3] : 'Unknown',
-                });
+                if (data.lot !== undefined) {
+                    parkingArray.push({
+                        parkingLocation: `Section ${data.lot}`,
+                        checkInTime: data.checkin,
+                        checkOutTime: data.checkout
+                    });
+                }
             });
 
             res.render('dashboard', {

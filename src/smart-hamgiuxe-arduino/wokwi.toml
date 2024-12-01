@@ -4,19 +4,6 @@ firmware = './.pio/build/uno/firmware.hex'
 elf = './.pio/build/uno/firmware.elf'
 rfc2217ServerPort = 4000
 
-# Forward http://localhost:8180 to port 80 on the simulated ESP32:
-[[net.forward]]
-from = "localhost:8180"
-to = "target:80"
-
 [[chip]]
 name = 'md0370'
 binary = 'chips/md0370.chip.wasm'
-
-[[serial]]
-name = "com1"
-baud = 115200
-
-[[serial]]
-name = "com2" 
-baud = 9600

@@ -2,7 +2,8 @@
 version = 1
 firmware = './.pio/build/esp32/firmware.bin'
 elf = './.pio/build/esp32/firmware.elf'
-rfc2217ServerPort = 4000
+rfc2217ServerPort = 4001
+upload_port = "COM1"
 
 # Forward http://localhost:8180 to port 80 on the simulated ESP32:
 [[net.forward]]

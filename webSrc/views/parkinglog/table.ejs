@@ -4,43 +4,28 @@
             <tr>
                 <th>#</th>
                 <th>Parking location</th>
-                <th>Entry date</th>
                 <th>Check-in time</th>
-                <th>Exit date</th>
                 <th>Check-out time</th>
             </tr>
         </thead>
         <tbody>
-            <% if (parkinglogData.length === 0) { %>
+            <% parkinglogData.forEach((log, index)=> { %>
                 <tr>
-                    <td colspan="5" class="no-data">
-                        No data available
+                    <td class="table-index">
+                        <%= (currentPage - 1) * 10 + index + 1 %>
+                    </td>
+                    <td class="parking-location">
+                        <%= log.parkingLocation %>
+                    </td>
+                    <td class="check-in-time">
+                        <%= log.checkInTime %>
+                    </td>
+                    <td class="check-out-time">
+                        <%= log.checkOutTime %>
                     </td>
                 </tr>
-            <% } else { %>
-                <% parkinglogData.forEach((log, index) => { %>
-                    <tr>
-                        <td class="table-index">
-                            <%= (currentPage - 1) * 10 + index + 1 %>
-                        </td>
-                        <td class="parking-location">
-                            <%= log.parkingLocation %>
-                        </td>
-                        <td class="entrydate">
-                            <%= log.entryDate %>
-                        </td>
-                        <td class="check-in-time">
-                            <%= log.checkInTime %>
-                        </td>
-                        <td class="exitdate">
-                            <%= log.exitDate %>
-                        </td>
-                        <td class="check-out-time">
-                            <%= log.checkOutTime %>
-                        </td>
-                    </tr>
                 <% }) %>
-            <% } %>
+            <%  %>
         </tbody>
     </table>
 </div>

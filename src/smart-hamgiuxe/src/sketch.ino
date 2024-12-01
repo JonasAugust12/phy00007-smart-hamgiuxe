@@ -1,18 +1,15 @@
-#include <ESP32Servo.h>
-#include <LiquidCrystal_I2C.h>
-#include <WiFi.h>
-#include <string>
-#include <FirebaseClient.h>
-#include <WiFiClientSecure.h>
-#include <ArduinoJson.h>
+#include "parkinglot.h"
+#include "firesystem.h"
+#include "gate.h"
 
 // WIFI
 const char *ssid = "Wokwi-GUEST";
 const char *password = "";
 
 // FIREBASE
-#define DATABASE_URL "https://phy00007-smart-hamgiuxe-22326-default-rtdb.firebaseio.com"
+#define DATABASE_URL  "https://phy00007-smart-hamgiuxe-22326-default-rtdb.firebaseio.com/"
 #define DATABASE_SECRET "FOO9eBjUDTEu5gqSYJLLlJlxHSK2GWSBaKBxq3cO"
+#define FIREBASE_PROJECT_ID "phy00007-smart-hamgiuxe-22326"
 
 WiFiClientSecure ssl, ssl2;
 DefaultNetwork network;
@@ -24,72 +21,13 @@ void printResult(AsyncResult &aResult);
 
 FirebaseApp app;
 RealtimeDatabase Database;
+Firestore::Documents Docs;
 LegacyToken dbSecret(DATABASE_SECRET);
-
-// GATE
-int in_trig = 33;
-int in_echo = 34;
-int servo_pin = 16;
-int out_trig = 23;
-int out_echo = 39;
-
-// FIRE
-int temp_sensor = 32;
-int button = 35;
-int led = 18;
-int buzzer = 5;
-int fire_relay = 17;
-int smoke_sensor = 36;
-
-LiquidCrystal_I2C LCD = LiquidCrystal_I2C(0x27, 16, 2);
-
-Servo servo;
-#define SERVO_TIMER_GROUP 1 // Sử dụng timer group 1
-
-WiFiClient espClient;
+int cnt = 1;
 
 // REAL TIME
 #define UTC_OFFSET 7 * 3600
 #define UTC_OFFSET_DST 0
-
-// GATE SYSTEM
-bool isGateActive = true;
-int carCountInDay = 0;
-int carCountInMonth = 0;
-const unsigned long passingTimeout = 3000;
-
-unsigned long startPassingTime = 0;
-bool isGateInOpened = false;
-bool isPassing = false;
-bool isInSensorExist = false;
-
-unsigned long startPassingOutTime = 0;
-bool isGateOutOpened = false;
-bool isPassingOut = false;
-bool isOutSensorExist = false;
-
-// FIRE PROTECTION SYSTEM
-#define SMOKE_THRESHOLD 2047
-#define TEMPERATURE_THRESHOLD 70
-const float BETA = 3950;
-
-bool isSirenActive = false;
-bool isFireDetected = false;
-bool isSmokeDetected = false;
-bool isEmergencyPressed = false;
-
-float temperature = 0;
-unsigned long lastTemperatureUpdate = 0;
-unsigned long pressTime = 0;
-unsigned long ledActiveTime = 0;
-unsigned long previousMillis = 0;
-const long interval = 50;
-const unsigned long tempInterval = 60000 * 5;
-int freq = 1000;
-
-// PARKING LOT
-String receivedMessage = "";
-int slotLeft = 3;
 
 bool isKeyExist(JsonObject obj, const char *key)
 {
@@ -106,27 +44,22 @@ bool isKeyExist(JsonObject obj, const char *key)
 void setupWifi()
 {
   delay(10);
-  Serial.print("Connecting to WiFi...");
-  WiFi.begin(ssid, password, 6);
+  Serial.println("Connecting to WiFi...");
+  WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(500);
-    Serial.print(".");
+    Serial.println(".");
   }
-  Serial.println("");
-  Serial.println("WiFi connected");
+  Serial.println("Connected to WiFi");
 }
 
-void setupServoTimer()
-{
-  // Cấu hình ESP32Servo để sử dụng timer cụ thể
-  ESP32PWM::allocateTimer(SERVO_TIMER_GROUP);
-
-  // Thiết lập thông số cho servo
-  servo.setPeriodHertz(50);           // Tần số tiêu chuẩn cho servo là 50Hz
-  servo.attach(servo_pin, 500, 2400); // Thiết lập min/max pulse width
-}
+// INIT SYSTEM
+Gate* gate;
+FireSystem* fireSystem;
+ParkingLot* parkingLot;
+LiquidCrystal_I2C LCD = LiquidCrystal_I2C(0x27, 16, 2);
 
 void setupFirebase()
 {
@@ -140,6 +73,8 @@ void setupFirebase()
 
   Database.setSSEFilters("put,patch");
   Database.get(aClient, "/", asyncCB, true, "streamTask");
+
+  app.getApp<Firestore::Documents>(Docs);
 }
 
 void asyncCB(AsyncResult &aResult)
@@ -181,15 +116,14 @@ void printResult(AsyncResult &aResult)
       if (RTDB.dataPath() == "/BARRIER/state")
       {
         bool barrierState = RTDB.to<bool>();
-        isGateActive = barrierState;
+        gate->isGateActive = barrierState;
       }
 
       if (RTDB.dataPath() == "/SIREN/state")
       {
         bool sirenState = RTDB.to<bool>();
-        isSirenActive = sirenState;
+        fireSystem->isSirenActive = sirenState;
       }
-
       // FETCH OTHER STREAM DATA HERE
     }
     else
@@ -204,30 +138,40 @@ void printResult(AsyncResult &aResult)
         JsonDocument doc;
         deserializeJson(doc, payload);
 
+        // GATE
         if (isKeyExist(doc.as<JsonObject>(), "BARRIER"))
         {
           JsonObject barrier = doc["BARRIER"];
-          isGateActive = barrier["state"];
+          gate->isGateActive = barrier["state"];
         }
         if (isKeyExist(doc.as<JsonObject>(), "CAR"))
         {
           JsonObject car = doc["CAR"];
-          carCountInDay = car["carInDay"];
-          carCountInMonth = car["carInMonth"];
+          gate->carCountInDay = car["carInDay"];
+          gate->carCountInMonth = car["carInMonth"];
+          gate->carCountTotal = car["carTotal"];
         }
+
+        // FIRE PROTECTION SYSTEM
         if (isKeyExist(doc.as<JsonObject>(), "SIREN"))
         {
           JsonObject siren = doc["SIREN"];
-          isSirenActive = siren["state"];
+          fireSystem->isSirenActive = siren["state"];
         }
 
         if (isKeyExist(doc.as<JsonObject>(), "FIRE"))
         {
           JsonObject fire = doc["FIRE"];
-          isFireDetected = fire["state"];
+          fireSystem->isFireDetected = fire["state"];
         }
 
-        // FETCH OTHER INIT DATA HERE
+        // PARKING LOT
+        if (isKeyExist(doc.as<JsonObject>(), "LOT")){
+          JsonObject lot = doc["LOT"];
+          parkingLot->lot[0] = lot["lot1"];
+          parkingLot->lot[1] = lot["lot2"];
+          parkingLot->lot[2] = lot["lot3"];
+        } 
       }
     }
 
@@ -263,8 +207,6 @@ void setup()
   // put your setup code here, to run once:
   Serial.begin(115200);
   Serial.println("Hello, ESP32!");
-  LCD.init();
-  LCD.backlight();
 
   // WIFI & TIME
   setupWifi();
@@ -273,66 +215,66 @@ void setup()
   // FIREBASE
   setupFirebase();
 
-  // GATE
-  pinMode(in_trig, OUTPUT);
-  pinMode(in_echo, INPUT);
-  pinMode(out_trig, OUTPUT);
-  pinMode(out_echo, INPUT);
-
-  setupServoTimer();
-
-  // FIRE
-  pinMode(temp_sensor, INPUT);
-  pinMode(button, INPUT);
-  pinMode(led, OUTPUT);
-  pinMode(buzzer, OUTPUT);
-  pinMode(fire_relay, OUTPUT);
-  digitalWrite(fire_relay, LOW);
-  pinMode(smoke_sensor, INPUT);
+  // GATE SYSTEM
+  LCD.init();
+  LCD.backlight();
   LCD.setCursor(0, 0);
   LCD.print("      SMART     ");
   LCD.setCursor(0, 1);
   LCD.print(" PARKING SYSTEM ");
-  delay(1000);
+  delay(2000);
   LCD.clear();
+
+  gate = new Gate();
+  gate->setupGate();
+
+  // FIRE PROTECTION SYSTEM
+  fireSystem = new FireSystem();
+  fireSystem->setupFireSystem();
+
+  // PARKING LOT SYSTEM
+  parkingLot = new ParkingLot();
 }
 
 unsigned long ms = 0;
 void loop()
 {
-  checkCarCountReset();
-  setupServoTimer();
+  gate->checkCarCountReset();
 
   app.loop();
   Database.loop();
+  Docs.loop();
 
-  bool isCarEntered = false;
-  if (isGateActive)
-  {
-    isCarEntered = handleGateFlow(in_trig, in_echo, isGateInOpened, isInSensorExist, isPassing, startPassingTime, "Entry");
-    handleGateFlow(out_trig, out_echo, isGateOutOpened, isOutSensorExist, isPassingOut, startPassingOutTime, "Exit");
-  }
-
-  if (app.ready())
-  {
-    updateTemperature();
-    if (isCarEntered)
-    {
-      updateCarCount();
-    }
-  }
-  handleFireProtection();
-  handleParkingLot();
+  // GATE
+  gate->handleGate();
+  // FIRE PROTECTION
+  fireSystem->handleFireProtection();
+  // PARKING LOT
+  parkingLot->handleParkingLot();
 
   LCD.setCursor(0, 0);
   LCD.print("    WELCOME!    ");
   LCD.setCursor(0, 1);
   LCD.print("Slot Left: ");
-  LCD.print(slotLeft);
+  LCD.print(parkingLot->getSlotLeft());
 
-  String payload = "Slot Left: ";
-  payload.concat(String(slotLeft));
-  static String lastPayload = "";
+  // SEND DATA TO WEBSITE
+  if (app.ready())
+  {
+    if (gate->isCarEntered)
+      updateCarCount();
+
+    if (parkingLot->isCheckin)
+      updateParkingLogCheckin();
+
+    if (parkingLot->isCheckout)
+      updateParkingLogCheckout();
+
+    updateTemperature();
+
+    if (fireSystem->isFireDetectionUpdate)
+      updateFireDetection();
+  }
 
   delay(100);
 }
@@ -340,119 +282,98 @@ void loop()
 void updateCarCount()
 {
   JsonWriter writer;
-  object_t CAR, carInDay, carInMonth;
+  object_t CAR, carInDay, carInMonth, carTotal;
 
-  writer.create(carInDay, "carInDay", carCountInDay);
-  writer.create(carInMonth, "carInMonth", carCountInMonth);
-  writer.join(CAR, 2, carInDay, carInMonth);
+  writer.create(carInDay, "carInDay", gate->carCountInDay);
+  writer.create(carInMonth, "carInMonth", gate->carCountInMonth);
+  writer.create(carTotal, "carTotal", gate->carCountTotal);
+  writer.join(CAR, 3, carInDay, carInMonth, carTotal);
 
   Database.set<object_t>(aClient2, "/CAR", CAR, asyncCB, "carTask");
 }
 
-void checkCarCountReset()
-{
-  struct tm timeinfo;
-  if (!getLocalTime(&timeinfo))
-  {
-    Serial.println("Failed to obtain time");
-    return;
-  }
+void updateParkingLogCheckin(){
+  String documentPath = "Parking/";
+  documentPath +=  + gate->carCountTotal;
 
-  if (timeinfo.tm_hour == 0 && timeinfo.tm_min == 0 && timeinfo.tm_sec >= 0 && timeinfo.tm_sec <= 5)
-  {
-    carCountInDay = 0;
-  }
+  String message = parkingLot->receivedMessage;
+  String lot_str = message.substring(0, message.indexOf(" "));
+  String checkin_str = message.substring(message.indexOf("-") + 1, message.indexOf("IN") - 1);
 
-  if (timeinfo.tm_mday == 1 && timeinfo.tm_hour == 0 && timeinfo.tm_min == 0 && timeinfo.tm_sec >= 0 && timeinfo.tm_sec <= 5)
-  {
-    carCountInMonth = 0;
-  }
+  Values::StringValue lot(lot_str);
+  Values::StringValue checkin(checkin_str);
+  Values::StringValue checkout("None");
+
+  Document<Values::Value> doc("lot", Values::Value(lot));
+  doc.add("checkin", Values::Value(checkin));
+  doc.add("checkout", Values::Value(checkout));
+
+  Docs.createDocument(
+    aClient2, 
+    Firestore::Parent(FIREBASE_PROJECT_ID), 
+    documentPath, 
+    DocumentMask(), 
+    doc, 
+    asyncCB, 
+    "createDocumentTask"
+  );
+   
+  JsonWriter writer;
+  object_t LOT, lot1, lot2, lot3;
+  parkingLot->lot[stoi(lot_str.c_str()) - 1] = gate->carCountTotal;
+  writer.create(lot1, "lot1", parkingLot->lot[0]);
+  writer.create(lot2, "lot2", parkingLot->lot[1]);
+  writer.create(lot3, "lot3", parkingLot->lot[2]);
+  writer.join(LOT, 3, lot1, lot2, lot3);
+  Database.set<object_t>(aClient2, "/LOT", LOT, asyncCB, "updateLotMarking"); 
+
+  parkingLot->receivedMessage = "";
+  parkingLot->isCheckin = false;
 }
 
-bool handleGateFlow(int sensorTrig, int sensorEcho, bool &isGateOpened, bool &isSensorExist,
-                    bool &isPassing, unsigned long &startPassingTime, const char *gateType)
-{
-  int distance_cm = getDistance(sensorTrig, sensorEcho);
-  if (distance_cm > 0 && distance_cm < 100 && !isGateOpened) // Car approaching gate
-  {
-    openGate();
-    isGateOpened = true;
-    Serial.print("Gate Opened - ");
-    Serial.println(gateType);
-  }
-  else if (isGateOpened) // Car has passed the gate
-  {
-    if (distance_cm >= 100 && !isSensorExist)
-    {
-      startPassingTime = millis();
-      isSensorExist = true;
-    }
+void updateParkingLogCheckout(){
+  String documentPath = "Parking/";
 
-    if (isSensorExist)
-    {
-      // If the car is detected at the opposite sensor
-      int oppositeDistance = (gateType == "Entry") ? getDistance(out_trig, out_echo) : getDistance(in_trig, in_echo);
-      if (oppositeDistance < 100)
-      {
-        isPassing = true;
-        Serial.print("Car detected at opposite. Waiting to clear - ");
-        Serial.println(gateType);
-      }
-      else // Car has left the opposite sensor
-      {
-        unsigned long d = millis() - startPassingTime;
+  String message = parkingLot->receivedMessage;
+  String lot_str = message.substring(0, message.indexOf(" "));
+  String checkout_str = message.substring(message.indexOf("-") + 1, message.indexOf("OUT") - 1);
 
-        if (d > passingTimeout || isPassing)
-        {
-          closeGate();
-          isPassing = false;
-          isGateOpened = false;
-          isSensorExist = false;
-          Serial.print("Gate Closed - ");
-          Serial.println(gateType);
-          if (d <= passingTimeout && gateType == "Entry")
-          {
-            carCountInDay += 1;
-            carCountInMonth += 1;
-            return true;
-          }
-        }
-      }
-    }
-  }
-  return false;
-}
+  documentPath +=  parkingLot->lot[stoi(lot_str.c_str()) - 1];
+  
+  Values::StringValue lot(lot_str);
+  Values::StringValue checkout(checkout_str);
 
-void openGate()
-{
-  servo.write(0);
-}
+  Document<Values::Value> doc("checkout", Values::Value(checkout));
+  
+  PatchDocumentOptions options(
+    DocumentMask("checkout"),
+    DocumentMask(),
+    Precondition()
+  );
 
-void closeGate()
-{
-  servo.write(90);
-}
+  Docs.patch(
+    aClient2, 
+    Firestore::Parent(FIREBASE_PROJECT_ID), 
+    documentPath, 
+    options, 
+    doc, 
+    asyncCB, 
+    "patchDocumentTask"
+  );
 
-long getDistance(int trig, int echo)
-{
-  digitalWrite(trig, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trig, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trig, LOW);
-
-  long duration = pulseIn(echo, HIGH);
-  long distance_cm = duration * 0.034 / 2;
-  return distance_cm;
+  parkingLot->receivedMessage = "";
+  parkingLot->isCheckout = false;
 }
 
 void updateTemperature()
 {
   unsigned long currentMillis = millis();
-  float currentTemperature = getTemperature(temp_sensor);
-  if (currentMillis - lastTemperatureUpdate >= tempInterval || abs(currentTemperature - temperature) > 1)
+  float currentTemperature = fireSystem->getTemperature();
+  if (currentMillis - fireSystem->lastTemperatureUpdate >= fireSystem->tempInterval 
+        || abs(currentTemperature - fireSystem->temperature) > 1)
   {
-    lastTemperatureUpdate = currentMillis;
+    fireSystem->lastTemperatureUpdate = currentMillis;
+    fireSystem->temperature = currentTemperature;
     JsonWriter writer;
     object_t TEMPERATURE, value;
 
@@ -467,143 +388,9 @@ void updateFireDetection()
   JsonWriter writer;
   object_t FIRE, state;
 
-  writer.create(state, "state", isFireDetected);
+  writer.create(state, "state", fireSystem->isFireDetected);
   writer.join(FIRE, 1, state);
 
   Database.set<object_t>(aClient2, "/FIRE", FIRE, asyncCB, "fireTask");
-}
-
-void handleFireProtection()
-{
-  temperature = getTemperature(temp_sensor);
-  int smokeValue = analogRead(smoke_sensor);
-  int buttonState = digitalRead(button);
-
-  while (buttonState == HIGH)
-  {
-    if (digitalRead(button) == LOW)
-    {
-      isEmergencyPressed = !isEmergencyPressed;
-      ledActiveTime = millis();
-      break;
-    }
-  }
-
-  if (smokeValue > SMOKE_THRESHOLD)
-  {
-    isSmokeDetected = true;
-  }
-  else
-  {
-    isSmokeDetected = false;
-    isFireDetected = false;
-  }
-
-  if (isSmokeDetected && temperature > TEMPERATURE_THRESHOLD)
-  {
-    if (!isFireDetected)
-    {
-      isFireDetected = true;
-      updateFireDetection();
-    }
-  }
-  else
-  {
-    if (isFireDetected)
-    {
-      isFireDetected = false;
-      updateFireDetection();
-    }
-  }
-
-  if (isSmokeDetected || isEmergencyPressed || isSirenActive)
-  {
-    activateAlarm();
-  }
-  else
-  {
-    deactivateAlarm();
-  }
-
-  if (isFireDetected)
-  {
-    digitalWrite(fire_relay, HIGH);
-  }
-  else
-  {
-    digitalWrite(fire_relay, LOW);
-  }
-}
-
-float getTemperature(int temp_sensor)
-{
-  int analogValue = analogRead(temp_sensor);
-  float celsius = 1 / (log(1 / (4095. / analogValue - 1)) / BETA + 1.0 / 298.15) - 273.15;
-  return celsius;
-}
-
-void activateAlarm()
-{
-  unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= interval)
-  {
-    previousMillis = currentMillis;
-
-    freq += 50;
-    if (freq >= 1500)
-    {
-      freq = 1000;
-    }
-
-    tone(buzzer, freq);
-  }
-
-  if (currentMillis - ledActiveTime >= 500)
-  {
-    digitalWrite(led, !digitalRead(led));
-    ledActiveTime = currentMillis;
-  }
-}
-
-void deactivateAlarm()
-{
-  digitalWrite(led, LOW);
-  noTone(buzzer);
-}
-
-// PARKING LOT SYSTEM
-void handleParkingLot()
-{
-  while (Serial.available() > 0)
-  {
-    char incomingChar = Serial.read(); // Read each character from the buffer
-
-    if (incomingChar == '\n')
-    { // Check if the user pressed Enter (new line character)
-      // Print the message
-      Serial.println(receivedMessage);
-      std::string message = receivedMessage.c_str();
-      if (message.find("IN") != -1)
-      {
-        if (slotLeft > 0)
-        {
-          slotLeft--;
-        }
-      }
-      else if (message.find("OUT") != -1)
-      {
-        if (slotLeft < 3)
-        {
-          slotLeft++;
-        }
-      }
-      // Clear the message buffer for the next input
-      receivedMessage = "";
-    }
-    else
-    {
-      // Append the character to the message string
-      receivedMessage += incomingChar;
-    }
-  }
+  fireSystem->isFireDetectionUpdate = false;
 }
