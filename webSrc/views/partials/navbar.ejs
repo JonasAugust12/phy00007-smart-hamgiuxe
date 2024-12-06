@@ -46,7 +46,11 @@
             </svg>
         </div>
         <div class="utilities-avatar" onclick="window.location.href = '/profile'">
-            <img src="./img/avatar.jpg" alt="avatar">
+            <% if (user.avatarUrl) { %>
+                <img src="<%= user.avatarUrl %>" alt="avatar">
+            <% } else { %>
+                <img src="https://res.cloudinary.com/djyugezvf/image/upload/v1733484686/phy000007/q57ps7ajaeqeuqztwkhf.png" alt="avatar">
+            <% } %>
             <div class="edit-profile-title">Edit profile</div>
         </div>
     </div>

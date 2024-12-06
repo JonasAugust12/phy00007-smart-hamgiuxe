@@ -24,7 +24,10 @@
 
     <span class="auth-err"></span>
 
-    <button type="submit" class="btn">Sign up</button>
+    <button type="submit" class="btn" id="login-btn">Sign up</button>
+    <button type="submit" class="btn" id="loading-btn" style="display: none;">
+        <%- include('../partials/loading') %>
+    </button>
 
     <div class="register-link">
         <p>Aleady have an account?
@@ -39,6 +42,8 @@
 
     const form = document.querySelector('.auth-form');
     const authErrElement = form.querySelector('.auth-err');
+    const loginBtn = document.getElementById('login-btn');
+    const loadingBtn = document.getElementById('loading-btn');
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -74,6 +79,9 @@
             return;
         }
 
+        loginBtn.style.display = 'none';
+        loadingBtn.style.display = 'block';
+
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
             const user = userCredential.user;
@@ -85,7 +93,8 @@
                 emergencyEmail: false,
                 dailyEmail: false,
                 dailySMS: false,
-                createdAt: new Date()
+                avatarUrl: 'https://res.cloudinary.com/djyugezvf/image/upload/v1733484686/phy000007/q57ps7ajaeqeuqztwkhf.png',
+                createdAt: new Date(),
             });
 
             window.location.href = '/login';
@@ -104,6 +113,9 @@
                 authErrElement.style.display = 'block';
                 authErrElement.textContent = 'Sign up failed';
             }
+        } finally {
+            loginBtn.style.display = 'block';
+            loadingBtn.style.display = 'none';
         }
     });
 

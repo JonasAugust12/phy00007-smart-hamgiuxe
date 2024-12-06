@@ -1,5 +1,5 @@
 <div>
-    <form class="upload__form">
+    <form class="upload__form" id="upload-avatar-form">
         <label for="upload-avatar" class="upload__label">
             To upload an avatar click on the box or drop a file here!
             <div class="upload__container">
@@ -11,7 +11,10 @@
                         aria-label="File upload" name="image" />
                 </div>
                 <span class="upload__desc">File size is less than 10 MB</span>
-                <button class="upload__button" type="submit"> Upload </button> 
+                <button class="upload__button" type="submit" id="upload-avatar-btn"> Upload </button>
+                <button class="upload__button" type="submit" id="upload-avatar-loading" style="display:none;">
+                    <%- include('../partials/loading') %>
+                </button>
             </div>
         </label>
     </form>
@@ -33,9 +36,12 @@
                     </div>
                 </div>
                 <span class="update-err info-err"></span>
-                <button class="info__button confirm-info" type="submit">
+                <button class="info__button confirm-info" type="submit" id="update-info-btn">
                     Update new information
                     <div class="button__background"></div>
+                </button>
+                <button class="info__button confirm-info" type="submit" id="update-info-loading" style="display:none;">
+                    <%- include('../partials/loading') %>
                 </button>
             </fieldset>
         </form>
@@ -62,9 +68,12 @@
                     </div>
                 </div>
                 <span class="update-err password-err"></span>
-                <button class="info__button confirm-password" type="submit">
+                <button class="info__button confirm-password" type="submit" id="update-password-btn">
                     Update
                     <div class="button__background"></div>
+                </button>
+                <button class="info__button confirm-password" type="submit" id="update-password-loading"  style="display:none;">
+                    <%- include('../partials/loading') %>
                 </button>
             </fieldset>
         </form>
@@ -73,10 +82,9 @@
 
 <script type = 'module'>
     import { auth, firestore, updateDoc, doc, updatePassword  } from "./js/firebase-config.js";
-
+    // Edit information
     const editInfoForm = document.querySelector('.edit-info');
     const editInfoError = editInfoForm.querySelector('.info-err');
-
     editInfoForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -95,6 +103,9 @@
             editInfoError.textContent = 'Username must be less than 12 characters';
             return;
         }
+
+        document.getElementById('update-info-btn').style.display = 'none';
+        document.getElementById('update-info-loading').style.display = 'block';
 
         try {
             const user = auth.currentUser;
@@ -127,12 +138,15 @@
                 console.error('Error updating document: ', error);
                 editInfoError.style.display = 'block';
                 editInfoError.textContent = "Error updating information. Please try again.";
+            } finally {
+                document.getElementById('update-info-btn').style.display = 'block';
+                document.getElementById('update-info-loading').style.display = 'none';
             }
     });
 
+    // Edit password
     const editPasswordForm = document.querySelector('.edit-password');
     const editPasswordError = editPasswordForm.querySelector('.password-err');
-
     editPasswordForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -159,6 +173,9 @@
             return;
         }
 
+        document.getElementById('update-password-btn').style.display = 'none';
+        document.getElementById('update-password-loading').style.display = 'block';
+
         try {
             const user = auth.currentUser;
             if (user) {
@@ -176,9 +193,14 @@
             console.error('Error updating password: ', error);
             editPasswordError.style.display = 'block';
             editPasswordError.textContent = "Error updating password. Please try again.";
+        } finally {
+            document.getElementById('update-password-btn').style.display = 'block';
+            document.getElementById('update-password-loading').style.display = 'none';
         }
     });
 
+
+    // Upload avatar
     document.getElementById('upload-avatar').addEventListener('change', function (event) {
         const file = event.target.files[0];
         const container = document.querySelector('.upload__onclick');
@@ -205,5 +227,42 @@
             reader.readAsDataURL(file);
         }
     });
+    const uploadAvatarForm = document.getElementById('upload-avatar-form');
+    uploadAvatarForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
 
+        const fileInput = document.getElementById('upload-avatar');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            alert('Please select an image to upload');
+            return;
+        }
+
+        document.getElementById('upload-avatar-btn').style.display = 'none';
+        document.getElementById('upload-avatar-loading').style.display = 'block';
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const response = await fetch('/upload-avatar', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error('Error uploading avatar');
+            }
+
+            const result = await response.json();
+            window.location.reload();
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error uploading avatar. Please try again.');
+        } finally {
+            document.getElementById('upload-avatar-btn').style.display = 'block';
+            document.getElementById('upload-avatar-loading').style.display = 'none';
+        }
+    });
 </script>

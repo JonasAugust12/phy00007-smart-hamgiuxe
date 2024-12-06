@@ -16,7 +16,10 @@
         <a href="/forgot-password">Forgot password?</a>
     </div>
 
-    <button type="submit" class="btn">Login</button>
+    <button type="submit" class="btn btn-login" id="login-btn">Login</button>
+    <button type="submit" class="btn btn-loading" id="loading-btn" style="display: none;">
+        <%- include('../partials/loading') %>
+    </button>
 
     <div class="register-link">
         <p>Don't have an account?
@@ -30,12 +33,17 @@
 
     const form = document.querySelector('.auth-form');
     const authErrElement = form.querySelector('.auth-err');
+    const loginBtn = document.getElementById('login-btn');
+    const loadingBtn = document.getElementById('loading-btn');
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const email = form.email.value;
         const password = form.password.value;
+
+        loginBtn.style.display = 'none';
+        loadingBtn.style.display = 'block';
 
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -55,13 +63,16 @@
             form.password.value = '';
 
             authErrElement.style.display = 'block';
-             if (error.code === "auth/user-not-found") {
+            if (error.code === "auth/user-not-found") {
                 authErrElement.textContent = "User not found";
             } else if (error.code === "auth/wrong-password") {
                 authErrElement.textContent = "Wrong password";
             } else {
                 authErrElement.textContent = "Login failed";
             }
+        } finally {
+            loginBtn.style.display = 'block';
+            loadingBtn.style.display = 'none';
         }
     });
 </script>

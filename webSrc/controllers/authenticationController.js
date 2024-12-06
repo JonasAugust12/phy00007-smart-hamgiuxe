@@ -53,11 +53,4 @@ authenticationController.forgotPass = (req, res) => {
     });
 }
 
-authenticationController.resetPass = (req, res) => {
-    res.render('authentication/reset-password', {
-        layout: 'layouts/auth',
-        title: 'Reset Password',
-    });
-}
-
 module.exports = authenticationController;

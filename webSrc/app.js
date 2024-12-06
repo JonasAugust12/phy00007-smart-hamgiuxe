@@ -40,7 +40,7 @@ cron.schedule('59 23 * * *', dailyTask.dailyVehicleNoti);
 // Schedule monthly task at 23:02 on the 1st day of every month
 cron.schedule('59 23 1 * *', monthlyTask.monthlyVehicleNoti);
 
-const PORT = 3000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });

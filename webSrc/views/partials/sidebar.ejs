@@ -1,7 +1,12 @@
 <div class="side-bar">
     <div class="user-info">
         <div class="user-info__avatar">
-            <img src="./img/avatar.jpg" alt="avatar">
+            <% if (user.avatarUrl) { %>
+                <img src="<%= user.avatarUrl %>" alt="avatar">
+            <% } else { %>
+                <img src="https://res.cloudinary.com/djyugezvf/image/upload/v1733484686/phy000007/q57ps7ajaeqeuqztwkhf.png"
+                    alt="avatar">
+            <% } %>
         </div>
         <div class="user-info__info">
             <p>Welcome,</p>

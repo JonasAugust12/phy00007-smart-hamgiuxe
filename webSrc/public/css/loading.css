@@ -1,0 +1,22 @@
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.spinner {
+    height: 100%;
+    width: auto;
+    animation: spin 1.5s linear infinite;
+    color: #3b82f6;
+    /* Blue color */
+}
+
+.circle {
+    opacity: 0.25;
+}
+
+.path {
+    opacity: 0.75;
+}
