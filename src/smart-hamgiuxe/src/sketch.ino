@@ -3,18 +3,19 @@
 #include "gate.h"
 
 // TIME
-struct tm timeinfo;;
+struct tm timeinfo;
+;
 String currentDate;
 String currentMonth;
 int carCountByDay;
 int carCountByMonth;
-    
+
 // WIFI
 const char *ssid = "Wokwi-GUEST";
 const char *password = "";
 
 // FIREBASE
-#define DATABASE_URL  "https://phy00007-smart-hamgiuxe-22326-default-rtdb.firebaseio.com/"
+#define DATABASE_URL "https://phy00007-smart-hamgiuxe-22326-default-rtdb.firebaseio.com/"
 #define DATABASE_SECRET "FOO9eBjUDTEu5gqSYJLLlJlxHSK2GWSBaKBxq3cO"
 #define FIREBASE_PROJECT_ID "phy00007-smart-hamgiuxe-22326"
 
@@ -63,9 +64,9 @@ void setupWifi()
 }
 
 // INIT SYSTEM
-Gate* gate;
-FireSystem* fireSystem;
-ParkingLot* parkingLot;
+Gate *gate;
+FireSystem *fireSystem;
+ParkingLot *parkingLot;
 LiquidCrystal_I2C LCD = LiquidCrystal_I2C(0x27, 16, 2);
 
 void setupFirebase()
@@ -121,25 +122,25 @@ void printResult(AsyncResult &aResult)
       Serial.println("");
 
       Serial.println(RTDB.dataPath().c_str());
-      if (RTDB.dataPath() == "/BARRIER/state" || RTDB.dataPath() == "/BARRIER")
+      if (RTDB.dataPath() == "/BARRIER")
       {
-        bool barrierState = RTDB.to<bool>();
-        gate->isGateActive = barrierState;
+        gate->isGateActive = !gate->isGateActive;
       }
 
-      if (RTDB.dataPath() == "/SIREN/state" || RTDB.dataPath() == "/SIREN")
+      if (RTDB.dataPath() == "/SIREN")
       {
-        bool sirenState = RTDB.to<bool>();
-        fireSystem->isSirenActive = sirenState;
+        fireSystem->isSirenActive = !fireSystem->isSirenActive;
       }
       // FETCH OTHER STREAM DATA HERE
       String dailyPath = "/DAILY/" + currentDate;
-      if (RTDB.dataPath() == dailyPath){
+      if (RTDB.dataPath() == dailyPath)
+      {
         carCountByDay = RTDB.to<int>();
       }
 
       String monthlyPath = "/MONTHLY/" + currentMonth;
-      if (RTDB.dataPath() == monthlyPath){
+      if (RTDB.dataPath() == monthlyPath)
+      {
         carCountByMonth = RTDB.to<int>();
       }
 
@@ -149,7 +150,6 @@ void printResult(AsyncResult &aResult)
         parkingLot->isSimulatedUpdate = true;
         Firebase.printf("path: %s ", parkingLot->receivedMessage.c_str());
       }
-
     }
     else
     {
@@ -191,12 +191,13 @@ void printResult(AsyncResult &aResult)
         }
 
         // PARKING LOT
-        if (isKeyExist(doc.as<JsonObject>(), "LOT")){
+        if (isKeyExist(doc.as<JsonObject>(), "LOT"))
+        {
           JsonObject lot = doc["LOT"];
           parkingLot->lot[0] = lot["lot1"];
           parkingLot->lot[1] = lot["lot2"];
           parkingLot->lot[2] = lot["lot3"];
-        } 
+        }
 
         if (isKeyExist(doc.as<JsonObject>(), "TEMPERATURE"))
         {
@@ -315,7 +316,8 @@ void loop()
   // SEND DATA TO WEBSITE
   if (app.ready())
   {
-    if (gate->isCarEntered){
+    if (gate->isCarEntered)
+    {
       updateCarCount();
       updateHistory();
     }
@@ -348,9 +350,10 @@ void updateCarCount()
   Database.set<object_t>(aClient2, "/CAR", CAR, asyncCB, "carTask");
 }
 
-void updateParkingLogCheckin(){
+void updateParkingLogCheckin()
+{
   String documentPath = "Parking/";
-  documentPath +=  + gate->carCountTotal;
+  documentPath += +gate->carCountTotal;
 
   String message = parkingLot->receivedMessage;
   String lot_str = message.substring(0, message.indexOf(" "));
@@ -365,15 +368,14 @@ void updateParkingLogCheckin(){
   doc.add("checkout", Values::Value(checkout));
 
   Docs.createDocument(
-    aClient2, 
-    Firestore::Parent(FIREBASE_PROJECT_ID), 
-    documentPath, 
-    DocumentMask(), 
-    doc, 
-    asyncCB, 
-    "createDocumentTask"
-  );
-   
+      aClient2,
+      Firestore::Parent(FIREBASE_PROJECT_ID),
+      documentPath,
+      DocumentMask(),
+      doc,
+      asyncCB,
+      "createDocumentTask");
+
   JsonWriter writer;
   object_t LOT, lot1, lot2, lot3;
   parkingLot->lot[stoi(lot_str.c_str()) - 1] = gate->carCountTotal;
@@ -381,41 +383,40 @@ void updateParkingLogCheckin(){
   writer.create(lot2, "lot2", parkingLot->lot[1]);
   writer.create(lot3, "lot3", parkingLot->lot[2]);
   writer.join(LOT, 3, lot1, lot2, lot3);
-  Database.set<object_t>(aClient2, "/LOT", LOT, asyncCB, "updateLotMarking"); 
+  Database.set<object_t>(aClient2, "/LOT", LOT, asyncCB, "updateLotMarking");
 
   parkingLot->receivedMessage = "";
   parkingLot->isCheckin = false;
 }
 
-void updateParkingLogCheckout(){
+void updateParkingLogCheckout()
+{
   String documentPath = "Parking/";
 
   String message = parkingLot->receivedMessage;
   String lot_str = message.substring(0, message.indexOf(" "));
   String checkout_str = message.substring(message.indexOf("-") + 1, message.indexOf("OUT") - 1);
 
-  documentPath +=  parkingLot->lot[stoi(lot_str.c_str()) - 1];
-  
+  documentPath += parkingLot->lot[stoi(lot_str.c_str()) - 1];
+
   Values::StringValue lot(lot_str);
   Values::StringValue checkout(checkout_str);
 
   Document<Values::Value> doc("checkout", Values::Value(checkout));
-  
+
   PatchDocumentOptions options(
-    DocumentMask("checkout"),
-    DocumentMask(),
-    Precondition()
-  );
+      DocumentMask("checkout"),
+      DocumentMask(),
+      Precondition());
 
   Docs.patch(
-    aClient2, 
-    Firestore::Parent(FIREBASE_PROJECT_ID), 
-    documentPath, 
-    options, 
-    doc, 
-    asyncCB, 
-    "patchDocumentTask"
-  );
+      aClient2,
+      Firestore::Parent(FIREBASE_PROJECT_ID),
+      documentPath,
+      options,
+      doc,
+      asyncCB,
+      "patchDocumentTask");
 
   JsonWriter writer;
   object_t LOT, lot1, lot2, lot3;
@@ -424,12 +425,13 @@ void updateParkingLogCheckout(){
   writer.create(lot2, "lot2", parkingLot->lot[1]);
   writer.create(lot3, "lot3", parkingLot->lot[2]);
   writer.join(LOT, 3, lot1, lot2, lot3);
-  Database.set<object_t>(aClient2, "/LOT", LOT, asyncCB, "updateLotMarking"); 
+  Database.set<object_t>(aClient2, "/LOT", LOT, asyncCB, "updateLotMarking");
 
   parkingLot->receivedMessage = "None";
   parkingLot->isCheckout = false;
 
-  if (parkingLot->simulatedFlag){
+  if (parkingLot->simulatedFlag)
+  {
     object_t ARDUINO_SIMULATED, messageObj;
     writer.create(messageObj, "message", parkingLot->receivedMessage);
     writer.join(ARDUINO_SIMULATED, 1, messageObj);
@@ -441,8 +443,7 @@ void updateTemperature()
 {
   unsigned long currentMillis = millis();
   float currentTemperature = fireSystem->getTemperature();
-  if (currentMillis - fireSystem->lastTemperatureUpdate >= fireSystem->tempInterval 
-        || abs(currentTemperature - fireSystem->temperature) > 1)
+  if (currentMillis - fireSystem->lastTemperatureUpdate >= fireSystem->tempInterval || abs(currentTemperature - fireSystem->temperature) > 1)
   {
     fireSystem->lastTemperatureUpdate = currentMillis;
     fireSystem->temperature = currentTemperature;
@@ -467,19 +468,20 @@ void updateFireDetection()
   fireSystem->isFireDetectionUpdate = false;
 }
 
-void updateHistory(){
-    carCountByDay += 1;
-    carCountByMonth += 1;
+void updateHistory()
+{
+  carCountByDay += 1;
+  carCountByMonth += 1;
 
-    JsonWriter writer;
-    object_t DAILY, dateObj;
-    writer.create(dateObj, currentDate, carCountByDay);
-    writer.join(DAILY, 1, dateObj);
+  JsonWriter writer;
+  object_t DAILY, dateObj;
+  writer.create(dateObj, currentDate, carCountByDay);
+  writer.join(DAILY, 1, dateObj);
 
-    object_t MONTHLY, monthObj;
-    writer.create(monthObj, currentMonth, carCountByMonth);
-    writer.join(MONTHLY, 1, monthObj);
+  object_t MONTHLY, monthObj;
+  writer.create(monthObj, currentMonth, carCountByMonth);
+  writer.join(MONTHLY, 1, monthObj);
 
-    Database.update<object_t>(aClient2, "/DAILY", DAILY, asyncCB, "dailyHistoryTask");
-    Database.update<object_t>(aClient2, "/MONTHLY", MONTHLY, asyncCB, "monthlyHistoryTask");
+  Database.update<object_t>(aClient2, "/DAILY", DAILY, asyncCB, "dailyHistoryTask");
+  Database.update<object_t>(aClient2, "/MONTHLY", MONTHLY, asyncCB, "monthlyHistoryTask");
 }

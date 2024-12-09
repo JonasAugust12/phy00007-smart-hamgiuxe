@@ -6,26 +6,25 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-const uploadImage = async (req, res) => {
-    const file = req.file;
-    const uid = req.session.user.uid;
-
+const uploadImage = async (file, uid) => {
     if (!file) {
-        return res.status(400).send({ message: 'File not found' });
+        throw new Error('File not found');
     }
-
-    try {
-        const uploadedImage = await cloudinary.uploader.upload(req.file.path, {
-            resource_type: 'image',
-            public_id: uid,
-            folder: 'phy000007',
-            overwrite: true,
-        });
-
-        return uploadedImage;
-    } catch (error) {
-        return res.status(400).json({ message: error.message });
-    }
-}
+    const uploadedImage = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+            {
+                resource_type: 'image',
+                public_id: uid,
+                folder: 'phy000007',
+                overwrite: true,
+            },
+            (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+            }
+        ).end(file.buffer);
+    });
+    return uploadedImage;
+};
 
 module.exports = { uploadImage };

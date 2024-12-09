@@ -7,8 +7,7 @@ const { renderSettingPage, updateSetting } = require('../controllers/settingCont
 const {
     login, 
     register, 
-    forgotPass, 
-    resetPass,
+    forgotPass,
     verifyToken,
     logout
 } = require('../controllers/authenticationController');
@@ -34,7 +33,7 @@ router.get('/forgot-password', forgotPass);
 router.post('/logout', logout);
 
 router.post('/verify-token', verifyToken);
-router.post('/update-profile', updateProfile);
-router.post('/update-setting', updateSetting);
+router.post('/update-profile', authenticationMiddleware, updateProfile);
+router.post('/update-setting', authenticationMiddleware, updateSetting);
 
 module.exports = router;
