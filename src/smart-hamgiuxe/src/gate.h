@@ -13,7 +13,7 @@ class Gate {
         Servo servo;
 
         // GATE SYSTEM// 
-        const unsigned long passingTimeout = 3000;
+        const unsigned long passingTimeout = 5000;
 
         unsigned long startPassingTime = 0;
         bool isGateInOpened = false;

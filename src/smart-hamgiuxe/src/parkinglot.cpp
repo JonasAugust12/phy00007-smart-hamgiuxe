@@ -47,6 +47,30 @@ void ParkingLot::handleParkingLot(){
             receivedMessage += incomingChar;
         }
     }
+
+    // SIMULATION SECTION
+    if (simulatedFlag && isSimulatedUpdate){
+        if (receivedMessage != "None"){
+            std::string message = receivedMessage.c_str();
+            if (message.find("IN") != -1)
+            {
+                isCheckin = true;
+                if (slotLeft > 0)
+                {
+                    slotLeft--;
+                }
+            }
+            else if (message.find("OUT") != -1)
+            {
+                isCheckout = true;
+                if (slotLeft < 3)
+                {
+                    slotLeft++;
+                }
+            }
+        }
+        isSimulatedUpdate = false;
+    }
 }
 
 ParkingLot::~ParkingLot() {

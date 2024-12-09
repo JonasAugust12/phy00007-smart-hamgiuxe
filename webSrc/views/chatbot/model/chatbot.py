@@ -7,6 +7,8 @@ import pandas as pd
 import os
 import logging
 import random
+from .parkingdata import parking_data, fetching
+
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -189,43 +191,40 @@ def predict_intent(user_input):
         predicted_label = checkpoint['label_encoder'].inverse_transform(predicted)[0]
     
     # Trả về câu trả lời ngẫu nhiên
-    return random.choice(response_dict[predicted_label])
-
-# Từ điển phản hồi (giữ nguyên như ban đầu)
-response_dict = {
+    parking_data = fetching()
+    response_dict = {
     "Nhiệt độ": [
-        "Nhiệt độ hiện tại của hầm xe là 25 độ C",
-        "Nhiệt độ hiện tại của hầm xe là 26 độ C",
-        "Nhiệt độ hiện tại của hầm xe là 27 độ C",
+        f"Nhiệt độ hiện tại của hầm xe là {parking_data["temperature"]} độ C",
+        f"Hiện tại, nhiệt độ hầm xe đang ở mức {parking_data["temperature"]} độ C",
     ],
 
     "Số xe hiện tại": [
-        "Hiện tại đang có 3 xe trong bãi, còn 0 chỗ trống",
-        "Hiện tại đang có 2 xe trong bãi, còn 1 chỗ trống",
-        "Hiện tại đang có 1 xe trong bãi, còn 2 chỗ trống",
-        "Hiện tại đang có 0 xe trong bãi, còn 3 chỗ trống",
+        f"Hiện tại đang có {parking_data["current_car"]} xe trong bãi, còn {3 - parking_data["current_car"]} chỗ trống",
+        f"Trong bãi đang có {parking_data["current_car"]} xe, còn {3 - parking_data["current_car"]} chỗ trống",
     ],
 
     "Bãi 1": [
-        "Bãi 1 đang có xe đậu",
-        "Bãi 1 đang trống",
+        f"Bãi 1 đang {'có xe đậu' if (parking_data["lot1"] == True) else 'trống'}",
     ],
 
     "Bãi 2": [
-        "Bãi 2 đang có xe đậu",
-        "Bãi 2 đang trống",
+        f"Bãi 2 đang {'có xe đậu' if (parking_data["lot2"] == True) else 'trống'}",
     ],
 
     "Bãi 3": [
-        "Bãi 3 đang có xe đậu",
-        "Bãi 3 đang trống",
+        f"Bãi 3 đang {'có xe đậu' if (parking_data["lot3"] == True) else 'trống'}",
     ],
 
     "Tổng xe ngày hiện tại" : [
-        f"Ngày hôm nay đã có {random.randint(1, 100)} xe vào bãi",
+        f"Ngày hôm nay đã có {parking_data["today_car"]} xe vào bãi",
     ],
 
     "Tổng xe ngày hôm qua" : [
-        f"Ngày hôm qua đã có {random.randint(1, 100)} xe vào bãi",
+        f"Ngày hôm qua đã có {parking_data['yesterday_car']} xe vào bãi",
     ]
 }
+    return random.choice(response_dict[predicted_label])
+
+# Từ điển phản hồi (giữ nguyên như ban đầu)
+
+

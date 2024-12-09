@@ -10,6 +10,9 @@ class ParkingLot {
         bool isCheckout;
         int* lot;
 
+        bool simulatedFlag = true;
+        bool isSimulatedUpdate = false;
+
         ParkingLot();
         String getSlotLeft();
         void handleParkingLot();

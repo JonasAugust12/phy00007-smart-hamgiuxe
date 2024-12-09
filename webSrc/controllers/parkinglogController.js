@@ -12,11 +12,12 @@ const parkinglogController = (req, res) => {
                     parkingArray.push({
                         parkingLocation: `Section ${data.lot}`,
                         checkInTime: data.checkin,
-                        checkOutTime: data.checkout
+                        checkOutTime: data.checkout,
+                        id: doc.id,
                     });
                 }
             });
-            parkingArray.reverse();
+            parkingArray.sort((a, b) => Number(a.id) - Number(b.id)).reverse();
             const totalPages = Math.ceil(parkingArray.length / 12);
             const start = (currentPage - 1) * 12;
             const end = start + 12;

@@ -18,11 +18,12 @@ const dashboardController = async (req, res) => {
                     parkingArray.push({
                         parkingLocation: `Section ${data.lot}`,
                         checkInTime: data.checkin,
-                        checkOutTime: data.checkout
+                        checkOutTime: data.checkout,
+                        id: doc.id,
                     });
                 }
             });
-
+            parkingArray.sort((a, b) => Number(a.id) - Number(b.id));
             res.render('dashboard', {
                 title: 'Dashboard',
                 layout: 'layouts/main',

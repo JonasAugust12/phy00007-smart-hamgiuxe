@@ -2,6 +2,13 @@
 #include "firesystem.h"
 #include "gate.h"
 
+// TIME
+struct tm timeinfo;;
+String currentDate;
+String currentMonth;
+int carCountByDay;
+int carCountByMonth;
+    
 // WIFI
 const char *ssid = "Wokwi-GUEST";
 const char *password = "";
@@ -113,18 +120,36 @@ void printResult(AsyncResult &aResult)
       Firebase.printf("path: %s ", RTDB.dataPath().c_str());
       Serial.println("");
 
-      if (RTDB.dataPath() == "/BARRIER/state")
+      Serial.println(RTDB.dataPath().c_str());
+      if (RTDB.dataPath() == "/BARRIER/state" || RTDB.dataPath() == "/BARRIER")
       {
         bool barrierState = RTDB.to<bool>();
         gate->isGateActive = barrierState;
       }
 
-      if (RTDB.dataPath() == "/SIREN/state")
+      if (RTDB.dataPath() == "/SIREN/state" || RTDB.dataPath() == "/SIREN")
       {
         bool sirenState = RTDB.to<bool>();
         fireSystem->isSirenActive = sirenState;
       }
       // FETCH OTHER STREAM DATA HERE
+      String dailyPath = "/DAILY/" + currentDate;
+      if (RTDB.dataPath() == dailyPath){
+        carCountByDay = RTDB.to<int>();
+      }
+
+      String monthlyPath = "/MONTHLY/" + currentMonth;
+      if (RTDB.dataPath() == monthlyPath){
+        carCountByMonth = RTDB.to<int>();
+      }
+
+      if (RTDB.dataPath() == "/ARDUINO/message" && parkingLot->simulatedFlag)
+      {
+        parkingLot->receivedMessage = RTDB.to<String>();
+        parkingLot->isSimulatedUpdate = true;
+        Firebase.printf("path: %s ", parkingLot->receivedMessage.c_str());
+      }
+
     }
     else
     {
@@ -172,6 +197,27 @@ void printResult(AsyncResult &aResult)
           parkingLot->lot[1] = lot["lot2"];
           parkingLot->lot[2] = lot["lot3"];
         } 
+
+        if (isKeyExist(doc.as<JsonObject>(), "TEMPERATURE"))
+        {
+          JsonObject temp = doc["TEMPERATURE"];
+          fireSystem->temperature = temp["value"];
+        }
+
+        if (isKeyExist(doc.as<JsonObject>(), "DAILY"))
+        {
+          carCountByDay = doc["DAILY"][currentDate.c_str()];
+        }
+
+        if (isKeyExist(doc.as<JsonObject>(), "MONTHLY"))
+        {
+          carCountByMonth = doc["MONTHLY"][currentMonth.c_str()];
+        }
+
+        if (isKeyExist(doc.as<JsonObject>(), "ARDUINO") && parkingLot->simulatedFlag)
+        {
+          parkingLot->receivedMessage = doc["ARDUINO"]["message"].as<String>();
+        }
       }
     }
 
@@ -183,7 +229,7 @@ void setupNTP()
 {
   configTime(UTC_OFFSET, UTC_OFFSET_DST, "asia.pool.ntp.org", "time.google.com", "pool.ntp.org");
   Serial.print("Syncing time...");
-  struct tm timeinfo;
+  // struct tm timeinfo;
   for (int i = 0; i < 10; i++)
   { // Retry 10 times
     if (getLocalTime(&timeinfo))
@@ -191,6 +237,8 @@ void setupNTP()
       Serial.println("");
       Serial.println("Time synchronized successfully");
       Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+      currentDate = String(timeinfo.tm_mday) + "-" + String(timeinfo.tm_mon + 1) + "-" + String(timeinfo.tm_year + 1900);
+      currentMonth = String(timeinfo.tm_mon + 1) + "-" + String(timeinfo.tm_year + 1900);
       return;
     }
     delay(500); // Wait before retrying
@@ -239,6 +287,12 @@ void setup()
 unsigned long ms = 0;
 void loop()
 {
+  if (getLocalTime(&timeinfo))
+  {
+    currentDate = String(timeinfo.tm_mday) + "-" + String(timeinfo.tm_mon + 1) + "-" + String(timeinfo.tm_year + 1900);
+    currentMonth = String(timeinfo.tm_mon + 1) + "-" + String(timeinfo.tm_year + 1900);
+  }
+
   gate->checkCarCountReset();
 
   app.loop();
@@ -261,8 +315,10 @@ void loop()
   // SEND DATA TO WEBSITE
   if (app.ready())
   {
-    if (gate->isCarEntered)
+    if (gate->isCarEntered){
       updateCarCount();
+      updateHistory();
+    }
 
     if (parkingLot->isCheckin)
       updateParkingLogCheckin();
@@ -361,8 +417,24 @@ void updateParkingLogCheckout(){
     "patchDocumentTask"
   );
 
-  parkingLot->receivedMessage = "";
+  JsonWriter writer;
+  object_t LOT, lot1, lot2, lot3;
+  parkingLot->lot[stoi(lot_str.c_str()) - 1] = 0;
+  writer.create(lot1, "lot1", parkingLot->lot[0]);
+  writer.create(lot2, "lot2", parkingLot->lot[1]);
+  writer.create(lot3, "lot3", parkingLot->lot[2]);
+  writer.join(LOT, 3, lot1, lot2, lot3);
+  Database.set<object_t>(aClient2, "/LOT", LOT, asyncCB, "updateLotMarking"); 
+
+  parkingLot->receivedMessage = "None";
   parkingLot->isCheckout = false;
+
+  if (parkingLot->simulatedFlag){
+    object_t ARDUINO_SIMULATED, messageObj;
+    writer.create(messageObj, "message", parkingLot->receivedMessage);
+    writer.join(ARDUINO_SIMULATED, 1, messageObj);
+    Database.set<object_t>(aClient2, "/ARDUINO", ARDUINO_SIMULATED, asyncCB, "arduinoTask");
+  }
 }
 
 void updateTemperature()
@@ -393,4 +465,21 @@ void updateFireDetection()
 
   Database.set<object_t>(aClient2, "/FIRE", FIRE, asyncCB, "fireTask");
   fireSystem->isFireDetectionUpdate = false;
+}
+
+void updateHistory(){
+    carCountByDay += 1;
+    carCountByMonth += 1;
+
+    JsonWriter writer;
+    object_t DAILY, dateObj;
+    writer.create(dateObj, currentDate, carCountByDay);
+    writer.join(DAILY, 1, dateObj);
+
+    object_t MONTHLY, monthObj;
+    writer.create(monthObj, currentMonth, carCountByMonth);
+    writer.join(MONTHLY, 1, monthObj);
+
+    Database.update<object_t>(aClient2, "/DAILY", DAILY, asyncCB, "dailyHistoryTask");
+    Database.update<object_t>(aClient2, "/MONTHLY", MONTHLY, asyncCB, "monthlyHistoryTask");
 }
