@@ -119,17 +119,26 @@ void printResult(AsyncResult &aResult)
       Firebase.printf("task: %s ", aResult.uid().c_str());
       Firebase.printf("event: %s ", RTDB.event().c_str());
       Firebase.printf("path: %s ", RTDB.dataPath().c_str());
+      Firebase.printf("data: %s\n", RTDB.to<const char *>());
       Serial.println("");
-
+      String path = RTDB.to<String>();
+      JsonDocument doc;
+      deserializeJson(doc, path);
       Serial.println(RTDB.dataPath().c_str());
       if (RTDB.dataPath() == "/BARRIER")
       {
-        gate->isGateActive = !gate->isGateActive;
+        bool barrierState = doc["state"];
+        Serial.print("Barrier: ");
+        Serial.println(barrierState);
+        gate->isGateActive = barrierState;
       }
 
       if (RTDB.dataPath() == "/SIREN")
       {
-        fireSystem->isSirenActive = !fireSystem->isSirenActive;
+        bool sirenState = doc["state"];
+        Serial.print("Siren: ");
+        Serial.println(sirenState);
+        fireSystem->isSirenActive = sirenState;
       }
       // FETCH OTHER STREAM DATA HERE
       String dailyPath = "/DAILY/" + currentDate;
@@ -332,6 +341,9 @@ void loop()
 
     if (fireSystem->isFireDetectionUpdate)
       updateFireDetection();
+
+    if (fireSystem->isSirenUpdate)
+      updateSiren();
   }
 
   delay(100);
@@ -466,6 +478,18 @@ void updateFireDetection()
 
   Database.set<object_t>(aClient2, "/FIRE", FIRE, asyncCB, "fireTask");
   fireSystem->isFireDetectionUpdate = false;
+}
+
+void updateSiren()
+{
+  JsonWriter writer;
+  object_t SIREN, state;
+
+  writer.create(state, "state", fireSystem->isSirenActive);
+  writer.join(SIREN, 1, state);
+
+  Database.set<object_t>(aClient2, "/SIREN", SIREN, asyncCB, "sirenTask");
+  fireSystem->isSirenUpdate = false;
 }
 
 void updateHistory()

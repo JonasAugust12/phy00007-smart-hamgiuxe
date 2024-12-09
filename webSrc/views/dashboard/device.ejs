@@ -65,12 +65,35 @@
     </div>
 </div>
 <script type="module">
-    import { database, ref, update } from "./js/firebase-config.js";
+    import { database, ref, update, onValue } from "./js/firebase-config.js";
     const device_overlay = document.getElementById('device-overlay');
     const device_confirmYesButton = document.getElementById('device-yes');
     const device_confirmNoButton = document.getElementById('device-no');
     const barrierElement = document.getElementById('barrier');
     const sirenElement = document.getElementById('siren');
+
+    const barrierRef = ref(database, 'BARRIER');
+    const sirenRef = ref(database, 'SIREN');
+
+    onValue(barrierRef, (snapshot) => {
+        const data = snapshot.val();
+        barrierElement.querySelector('.power-status').textContent = data.state ? 'On' : 'Off';
+        if (data.state) {
+            barrierElement.classList.add('power-status--active');
+        } else {
+            barrierElement.classList.remove('power-status--active');
+        }
+    });
+
+    onValue(sirenRef, (snapshot) => {
+        const data = snapshot.val();
+        sirenElement.querySelector('.power-status').textContent = data.state ? 'On' : 'Off';
+        if (data.state) {
+            sirenElement.classList.add('power-status--active');
+        } else {
+            sirenElement.classList.remove('power-status--active');
+        }
+    });
 
     let selectedDevice = null;
     function getNewDeviceStatus(device) {
@@ -107,7 +130,6 @@
         try {
             await update(deviceRef, { state: newDeviceStatus === 'On' });
             selectedDevice.querySelector('.power-status').textContent = newDeviceStatus;
-            selectedDevice.classList.toggle('power-status--active');
         } catch (error) {
             console.error(`Failed to update ${selectedDevice.id} status`, error);
         }

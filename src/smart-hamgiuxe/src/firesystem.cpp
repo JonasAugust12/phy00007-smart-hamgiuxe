@@ -4,12 +4,12 @@ FireSystem::FireSystem() {}
 
 void FireSystem::setupFireSystem()
 {
-    pinMode(temp_sensor, INPUT);
-    pinMode(button, INPUT);
-    pinMode(led, OUTPUT);
-    pinMode(buzzer, OUTPUT);
-    pinMode(fire_relay, OUTPUT);
-    pinMode(smoke_sensor, INPUT);
+  pinMode(temp_sensor, INPUT);
+  pinMode(button, INPUT);
+  pinMode(led, OUTPUT);
+  pinMode(buzzer, OUTPUT);
+  pinMode(fire_relay, OUTPUT);
+  pinMode(smoke_sensor, INPUT);
 }
 
 void FireSystem::handleFireProtection()
@@ -22,7 +22,8 @@ void FireSystem::handleFireProtection()
   {
     if (digitalRead(button) == LOW)
     {
-      isEmergencyPressed = !isEmergencyPressed;
+      isSirenUpdate = true;
+      isSirenActive = !isSirenActive;
       ledActiveTime = millis();
       break;
     }
@@ -55,8 +56,7 @@ void FireSystem::handleFireProtection()
     }
   }
 
-
-  if (isSmokeDetected || isEmergencyPressed || isSirenActive)
+  if (isSmokeDetected || isSirenActive)
   {
     activateAlarm();
   }
