@@ -3,7 +3,7 @@ const router = express.Router();
 
 const dashboardController = require('../controllers/dashboardController');
 const parkinglogController = require('../controllers/parkinglogController');
-const { renderSettingPage, updateSetting } = require('../controllers/settingController');
+const { renderSettingPage, updateSetting, sendEmail } = require('../controllers/settingController');
 const {
     login, 
     register, 
@@ -26,6 +26,7 @@ router.get('/profile', authenticationMiddleware, fetchNotifications, renderProfi
 router.get('/notification', authenticationMiddleware, fetchNotifications, notificationController);
 router.get('/chatbot', authenticationMiddleware, fetchNotifications, chatbotController);
 router.post('/upload-avatar', authenticationMiddleware, upload.single('image'), uploadAvatar);
+router.post('/send-email',authenticationMiddleware, sendEmail);
 
 router.get('/login', login);
 router.get('/register', register);

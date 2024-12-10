@@ -740,6 +740,20 @@ main {
     cursor: pointer;
 }
 
+.setting-button {
+    border-radius: 9999px;
+    background-color: #28a745;
+    cursor: pointer;
+    padding: 6px 12px;
+    text-align: center;
+    font-size: large;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    height: 3.5rem;
+    gap: 1rem;
+}
+
 /* form */
 
 .upload__form {

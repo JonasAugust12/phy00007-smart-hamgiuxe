@@ -74,16 +74,31 @@
             </svg>
         </div>
     </div>
+    
+    <div class="setting-item">
+        <div class="setting-text">
+            <p class="setting-title">Send Report To My Email</p>
+        </div>
+        <div class="setting-button" id="sendEmail">
+            <div id="loading" style="height: 2.5rem; display: none;">
+                <%- include('../partials/loading') %> 
+            </div>
+            SEND
+        </div>
+    </div>
 </div>
 
 
 <script type="module">
-   import { auth, firestore, updateDoc, doc } from "./js/firebase-config.js";
+    import { auth, firestore, updateDoc, doc } from "./js/firebase-config.js";
+    
 
     const settingOverlay = document.getElementById('setting-overlay');
     const settingConfirmYesButton = document.getElementById('setting-yes');
     const settingConfirmNoButton = document.getElementById('setting-no');
     const settingItems = document.querySelectorAll('.setting-item .setting-action');
+    const settingButton = document.getElementById('sendEmail');
+    const loading = document.getElementById('loading');
     let selectedSettingId = null;
     let selectedSettingStatus = null;
 
@@ -152,4 +167,17 @@
         });
     });
 
+    settingButton.addEventListener('click', async () => {
+        loading.style.display = 'block';
+        try {
+            const response = await fetch('/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            });
+        } catch (error) {
+            console.error('Error sending report:', error);   
+        } finally {
+            loading.style.display = 'none';
+        }
+    });
 </script>
