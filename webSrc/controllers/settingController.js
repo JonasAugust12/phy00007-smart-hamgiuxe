@@ -73,8 +73,17 @@ settingController.sendEmail = async (req, res) => {
         const dailyVehicleCountChange = dailyVehicleCount - yesterdayVehicleCount;
         const monthlyVehicleCountChange = monthlyVehicleCount - lastMonthVehicleCount;
 
-        const dayDiffString = dailyVehicleCountChange > 0 ? `↗ ${dailyVehicleCountChange}` : `↘ ${-dailyVehicleCountChange}`;
-        const monthDiffString = monthlyVehicleCountChange > 0 ? `↗ ${monthlyVehicleCountChange}` : `↘ ${-monthlyVehicleCountChange}`;
+        const dayDiffString = 
+            dailyVehicleCountChange == 0 
+                ? `~ 0` 
+                : dailyVehicleCountChange > 0 
+                ? `↗ ${dailyVehicleCountChange}` 
+                : `↘ ${-dailyVehicleCountChange}`; 
+        const monthDiffString = monthlyVehicleCountChange == 0
+                ? `~ 0`
+                : monthlyVehicleCountChange > 0
+                ? `↗ ${monthlyVehicleCountChange}` 
+                : `↘ ${-monthlyVehicleCountChange}`;
 
         const oAuth2Client = new google.auth.OAuth2(
             CLIENT_ID,
