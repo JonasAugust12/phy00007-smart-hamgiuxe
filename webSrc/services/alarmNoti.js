@@ -37,7 +37,8 @@ const alarmNoti = () => {
                 await notificationRef.add(newNotification);
                 console.log("Fire alarm notification added to Firestore!");
                 
-                if (first_message) {
+                // UNCOMMENT THIS TO SEND PUSH NOTIFICATION
+                /* if (first_message) {
                     p.send(message, (err, result) => {
                         if (err) {
                             console.error("Error sending push notification:", err);
@@ -46,7 +47,7 @@ const alarmNoti = () => {
                         }
                     });
                     first_message = false;
-                }
+                } */
 
             } catch (error) {
                 console.error("Error adding notification to Firestore:", error);
