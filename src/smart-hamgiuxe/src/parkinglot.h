@@ -2,9 +2,9 @@
 
 class ParkingLot {
     private:
-        int slotLeft;
         
     public:
+        int slotLeft;
         String receivedMessage;
         bool isCheckin;
         bool isCheckout;
@@ -15,6 +15,7 @@ class ParkingLot {
 
         ParkingLot();
         String getSlotLeft();
+        void setSlotLeft(int slotLeft);
         void handleParkingLot();
         ~ParkingLot();
 };

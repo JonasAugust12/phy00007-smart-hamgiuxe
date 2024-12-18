@@ -9,7 +9,6 @@ const alarmNoti  = require('./services/alarmNoti');
 const cron = require('node-cron');
 const dailyTask = require('./services/dailyTask');
 const monthlyTask = require('./services/monthlyTask');
-
 const app = express();
 
 app.use(session({

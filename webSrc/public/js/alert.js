@@ -19,6 +19,8 @@ onValue(fireRef, (snapshot) => {
         if (content) {
             content.classList.add('alert-background-content');
         }
+        
+        
     } else {
         if (nav) {
             nav.classList.remove('alert-background');

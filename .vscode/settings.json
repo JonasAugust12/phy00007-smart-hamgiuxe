@@ -1,3 +1,13 @@
 {
-  "liveServer.settings.port": 5502
+  "liveServer.settings.port": 5502,
+  "C_Cpp.errorSquiggles": "disabled",
+  "files.associations": {
+    "string": "cpp",
+    "fstream": "cpp",
+    "iostream": "cpp",
+    "iosfwd": "cpp",
+    "ostream": "cpp",
+    "map": "cpp",
+    "optional": "cpp"
+  }
 }

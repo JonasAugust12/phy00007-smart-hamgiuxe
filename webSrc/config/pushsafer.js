@@ -1,0 +1,1 @@
+var pushsafer = require('pushsafer-notifications');

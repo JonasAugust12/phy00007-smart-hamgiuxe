@@ -18,9 +18,9 @@ const parkinglogController = (req, res) => {
                 }
             });
             parkingArray.sort((a, b) => Number(a.id) - Number(b.id)).reverse();
-            const totalPages = Math.ceil(parkingArray.length / 12);
-            const start = (currentPage - 1) * 12;
-            const end = start + 12;
+            const totalPages = Math.ceil(parkingArray.length / 10);
+            const start = (currentPage - 1) * 10;
+            const end = start + 10;
             const pageLogs = parkingArray.slice(start, end);
 
             res.render('parkinglog', {

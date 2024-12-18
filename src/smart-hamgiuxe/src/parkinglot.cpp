@@ -12,6 +12,10 @@ String ParkingLot::getSlotLeft(){
     return String(slotLeft);
 }
 
+void ParkingLot::setSlotLeft(int slotLeft){
+    this->slotLeft = slotLeft;
+}
+
 void ParkingLot::handleParkingLot(){
     while (Serial.available() > 0)
     {

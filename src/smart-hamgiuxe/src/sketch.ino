@@ -4,7 +4,6 @@
 
 // TIME
 struct tm timeinfo;
-;
 String currentDate;
 String currentMonth;
 int carCountByDay;
@@ -32,6 +31,8 @@ RealtimeDatabase Database;
 Firestore::Documents Docs;
 LegacyToken dbSecret(DATABASE_SECRET);
 int cnt = 1;
+
+bool isSendSuccess = false;
 
 // REAL TIME
 #define UTC_OFFSET 7 * 3600
@@ -108,6 +109,9 @@ void printResult(AsyncResult &aResult)
   if (aResult.isError())
   {
     Firebase.printf("Error task: %s, msg: %s, code: %d\n", aResult.uid().c_str(), aResult.error().message().c_str(), aResult.error().code());
+    isSendSuccess = false;
+  } else {
+    isSendSuccess = true;
   }
 
   if (aResult.available())
@@ -159,6 +163,11 @@ void printResult(AsyncResult &aResult)
         parkingLot->isSimulatedUpdate = true;
         Firebase.printf("path: %s ", parkingLot->receivedMessage.c_str());
       }
+
+      if (RTDB.dataPath() == "/LOT/slotLeft")
+      {
+        parkingLot->slotLeft = RTDB.to<int>();
+      }
     }
     else
     {
@@ -206,6 +215,7 @@ void printResult(AsyncResult &aResult)
           parkingLot->lot[0] = lot["lot1"];
           parkingLot->lot[1] = lot["lot2"];
           parkingLot->lot[2] = lot["lot3"];
+          parkingLot->slotLeft = lot["slotLeft"];
         }
 
         if (isKeyExist(doc.as<JsonObject>(), "TEMPERATURE"))
@@ -320,7 +330,7 @@ void loop()
   LCD.print("    WELCOME!    ");
   LCD.setCursor(0, 1);
   LCD.print("Slot Left: ");
-  LCD.print(parkingLot->getSlotLeft());
+  LCD.print(parkingLot->slotLeft);
 
   // SEND DATA TO WEBSITE
   if (app.ready())
@@ -365,37 +375,29 @@ void updateCarCount()
 void updateParkingLogCheckin()
 {
   String documentPath = "Parking/";
-  documentPath += +gate->carCountTotal;
+  documentPath += gate->carCountTotal;
 
   String message = parkingLot->receivedMessage;
   String lot_str = message.substring(0, message.indexOf(" "));
   String checkin_str = message.substring(message.indexOf("-") + 1, message.indexOf("IN") - 1);
 
-  Values::StringValue lot(lot_str);
-  Values::StringValue checkin(checkin_str);
-  Values::StringValue checkout("None");
-
-  Document<Values::Value> doc("lot", Values::Value(lot));
-  doc.add("checkin", Values::Value(checkin));
-  doc.add("checkout", Values::Value(checkout));
-
-  Docs.createDocument(
-      aClient2,
-      Firestore::Parent(FIREBASE_PROJECT_ID),
-      documentPath,
-      DocumentMask(),
-      doc,
-      asyncCB,
-      "createDocumentTask");
-
   JsonWriter writer;
-  object_t LOT, lot1, lot2, lot3;
+  object_t LOT, lot1, lot2, lot3, slotleft;
   parkingLot->lot[stoi(lot_str.c_str()) - 1] = gate->carCountTotal;
   writer.create(lot1, "lot1", parkingLot->lot[0]);
   writer.create(lot2, "lot2", parkingLot->lot[1]);
   writer.create(lot3, "lot3", parkingLot->lot[2]);
-  writer.join(LOT, 3, lot1, lot2, lot3);
+  writer.create(slotleft, "slotLeft", parkingLot->getSlotLeft());
+  writer.join(LOT, 4, lot1, lot2, lot3, slotleft);
   Database.set<object_t>(aClient2, "/LOT", LOT, asyncCB, "updateLotMarking");
+
+  object_t PARKING, docIdObj, lotObj, checkinObj, checkOutObj;
+  writer.create(docIdObj, "docId", gate->carCountTotal);
+  writer.create(lotObj, "lot", lot_str);
+  writer.create(checkinObj, "checkin", checkin_str);
+  writer.create(checkOutObj, "checkout", "None");
+  writer.join(PARKING, 4, docIdObj, lotObj, checkinObj, checkOutObj);
+  Database.update<object_t>(aClient2, "/PARKING", PARKING, asyncCB, "parkingTask");
 
   parkingLot->receivedMessage = "";
   parkingLot->isCheckin = false;
@@ -411,44 +413,27 @@ void updateParkingLogCheckout()
 
   documentPath += parkingLot->lot[stoi(lot_str.c_str()) - 1];
 
-  Values::StringValue lot(lot_str);
-  Values::StringValue checkout(checkout_str);
-
-  Document<Values::Value> doc("checkout", Values::Value(checkout));
-
-  PatchDocumentOptions options(
-      DocumentMask("checkout"),
-      DocumentMask(),
-      Precondition());
-
-  Docs.patch(
-      aClient2,
-      Firestore::Parent(FIREBASE_PROJECT_ID),
-      documentPath,
-      options,
-      doc,
-      asyncCB,
-      "patchDocumentTask");
-
   JsonWriter writer;
-  object_t LOT, lot1, lot2, lot3;
+  object_t PARKING, docIdObj, lotObj, checkinObj, checkOutObj;
+  writer.create(docIdObj, "docId", parkingLot->lot[stoi(lot_str.c_str()) - 1]);
+  writer.create(lotObj, "lot", lot_str);
+  writer.create(checkinObj, "checkin", "None");
+  writer.create(checkOutObj, "checkout", checkout_str);
+  writer.join(PARKING, 4, docIdObj, lotObj, checkinObj, checkOutObj);
+  Database.update<object_t>(aClient2, "/PARKING", PARKING, asyncCB, "parkingTask");
+
+  object_t LOT, lot1, lot2, lot3, slotleft;
   parkingLot->lot[stoi(lot_str.c_str()) - 1] = 0;
   writer.create(lot1, "lot1", parkingLot->lot[0]);
   writer.create(lot2, "lot2", parkingLot->lot[1]);
   writer.create(lot3, "lot3", parkingLot->lot[2]);
-  writer.join(LOT, 3, lot1, lot2, lot3);
+  writer.create(slotleft, "slotLeft", parkingLot->getSlotLeft());
+  writer.join(LOT, 4, lot1, lot2, lot3, slotleft);
   Database.set<object_t>(aClient2, "/LOT", LOT, asyncCB, "updateLotMarking");
 
-  parkingLot->receivedMessage = "None";
-  parkingLot->isCheckout = false;
 
-  if (parkingLot->simulatedFlag)
-  {
-    object_t ARDUINO_SIMULATED, messageObj;
-    writer.create(messageObj, "message", parkingLot->receivedMessage);
-    writer.join(ARDUINO_SIMULATED, 1, messageObj);
-    Database.set<object_t>(aClient2, "/ARDUINO", ARDUINO_SIMULATED, asyncCB, "arduinoTask");
-  }
+  parkingLot->receivedMessage = "";
+  parkingLot->isCheckout = false;
 }
 
 void updateTemperature()
@@ -498,13 +483,15 @@ void updateHistory()
   carCountByMonth += 1;
 
   JsonWriter writer;
-  object_t DAILY, dateObj;
+  object_t DAILY, dateObj, countDailyObj;
   writer.create(dateObj, currentDate, carCountByDay);
-  writer.join(DAILY, 1, dateObj);
+  writer.create(countDailyObj, "count", carCountByDay);
+  writer.join(DAILY, 2, dateObj, countDailyObj);
 
-  object_t MONTHLY, monthObj;
+  object_t MONTHLY, monthObj, countMonthlyObj;
   writer.create(monthObj, currentMonth, carCountByMonth);
-  writer.join(MONTHLY, 1, monthObj);
+  writer.create(countMonthlyObj, "count", carCountByMonth);
+  writer.join(MONTHLY, 2, monthObj, countMonthlyObj);
 
   Database.update<object_t>(aClient2, "/DAILY", DAILY, asyncCB, "dailyHistoryTask");
   Database.update<object_t>(aClient2, "/MONTHLY", MONTHLY, asyncCB, "monthlyHistoryTask");
