@@ -1,6 +1,8 @@
 # Smart-Hamgiuxe - IoT Smart Parking System
 
-![System Diagram](docs/Diagram.png)
+<div align="center">
+<img src="docs/Diagram.png" width="650">
+</div>
 
 Smart parking management system with automated gate control, fire detection, and web monitoring.
 
@@ -13,22 +15,35 @@ Smart parking management system with automated gate control, fire detection, and
 
 ### Hardware Circuits
 
-![3D Parking Garage](docs/3DParkingGarage.png)
-![Arduino Circuit](docs/ArduinoCircuit.jpg)
-![ESP32 Circuit](docs/ESP32Circuit.jpg)
+<div align="center">
+<img src="docs/3DParkingGarage.png" width="650">
+<br><br>
+<img src="docs/ArduinoCircuit.jpg" width="650">
+<br><br>
+<img src="docs/ESP32Circuit.jpg" width="650">
+</div>
 
 ### Web Interface
 
-![Login Page](docs/Login.png)
-![Dashboard](docs/Dashboard.png)
-![Parking Log](docs/ParkingLog.png)
-![Chatbot](docs/Chatbot.png)
-![Settings](docs/Setting.png)
+<div align="center">
+<img src="docs/Login.png" width="650">
+<br><br>
+<img src="docs/Dashboard.png" width="650">
+<br><br>
+<img src="docs/ParkingLog.png" width="650">
+<br><br>
+<img src="docs/Chatbot.png" width="650">
+<br><br>
+<img src="docs/Setting.png" width="650">
+</div>
 
 ### Notifications
 
-![Email Report](docs/Email.jpg)
-![PushSafer Notification](docs/PushSafer.png)
+<div align="center">
+<img src="docs/Email.jpg" width="650">
+<br><br>
+<img src="docs/PushSafer.png" width="650">
+</div>
 
 ## Features
 
