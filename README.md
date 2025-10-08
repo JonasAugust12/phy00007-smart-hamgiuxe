@@ -79,13 +79,43 @@ Arduino UNO ──── ESP32 DevKit ──── Web Dashboard
 - 3x IR Sensors (Pins 2,4,7), 3x RGB LEDs (Pins 3,5,6,9,10,11)
 - RTC Clock (A4,A5)
 
-## Tech Stack
+# Tech Stack
 
-- **Hardware:** ESP32, Arduino UNO, Wokwi Simulator
-- **Backend:** Node.js, Express.js, Firebase
-- **Frontend:** HTML, CSS, JavaScript, EJS
-- **AI:** Python Flask, PhoBERT
-- **Services:** Cloudinary, Nodemailer, PushSafer
+## Hardware
+
+![ESP32](https://img.shields.io/badge/ESP32-000000?style=for-the-badge&logo=espressif&logoColor=white)
+![Arduino](https://img.shields.io/badge/Arduino-00979D?style=for-the-badge&logo=Arduino&logoColor=white)
+![Wokwi](https://img.shields.io/badge/Wokwi-4FC3F7?style=for-the-badge&logo=arduino&logoColor=white)
+
+## Frontend
+
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![EJS](https://img.shields.io/badge/EJS-B4CA65?style=for-the-badge&logo=ejs&logoColor=black)
+
+## Backend
+
+![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
+![Express.js](https://img.shields.io/badge/Express.js-404D59?style=for-the-badge&logo=express&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-039BE5?style=for-the-badge&logo=Firebase&logoColor=white)
+
+## AI & Machine Learning
+
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)
+
+## Cloud Services
+
+![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)
+![Gmail](https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white)
+![PushSafer](https://img.shields.io/badge/PushSafer-FF6B35?style=for-the-badge&logo=pusher&logoColor=white)
+
+## Development Tools
+
+![PlatformIO](https://img.shields.io/badge/PlatformIO-FF7F00?style=for-the-badge&logo=platformio&logoColor=white)
+![Arduino IDE](https://img.shields.io/badge/Arduino_IDE-00979D?style=for-the-badge&logo=arduino&logoColor=white)
 
 ## Quick Start
 
