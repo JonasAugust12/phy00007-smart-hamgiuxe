@@ -8,8 +8,8 @@ Smart parking management system with automated gate control, fire detection, and
 
 ### System Demos
 
-- [Parking Lot Demo](https://drive.google.com/drive/u/0/folders/10ofMhAusYKI4fNRivPvJcY8CxaRwe2DJ) - Vehicle entry/exit simulation
-- [Siren Demo](https://drive.google.com/drive/u/0/folders/10ofMhAusYKI4fNRivPvJcY8CxaRwe2DJ) - Fire alarm system demonstration
+- [Parking Lot Demo](https://drive.google.com/file/d/164KKhLscCx9l8UL9_osZAa_X4LqKg5fX/view?usp=sharing) - Vehicle entry/exit simulation
+- [Siren Demo](https://drive.google.com/file/d/11ITv-zhT1ou3GHXgi8XvYJygERg_G8v5/view?usp=sharing) - Fire alarm system demonstration
 
 ### Hardware Circuits
 
