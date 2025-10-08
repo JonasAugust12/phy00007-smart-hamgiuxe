@@ -8,8 +8,8 @@ Smart parking management system with automated gate control, fire detection, and
 
 ### System Demos
 
-- [Parking Lot Demo](docs/ParkingLotDemo.mkv) - Vehicle entry/exit simulation
-- [Siren Demo](docs/SirenDemo.mkv) - Fire alarm system demonstration
+- [Parking Lot Demo](https://drive.google.com/drive/u/0/folders/10ofMhAusYKI4fNRivPvJcY8CxaRwe2DJ) - Vehicle entry/exit simulation
+- [Siren Demo](https://drive.google.com/drive/u/0/folders/10ofMhAusYKI4fNRivPvJcY8CxaRwe2DJ) - Fire alarm system demonstration
 
 ### Hardware Circuits
 
@@ -166,16 +166,3 @@ The file `phy00007-smart-hamgiuxe-XXXX-firebase-adminsdk-XXXX-XXXXX.json` contai
 │   └── config/                  # Firebase, Cloudinary configs
 ├── docs/                        # Documentation & media files
 ```
-
-## Testing
-
-1. **Hardware:** Use Wokwi simulator to test sensor interactions
-2. **Web:** Register account, monitor dashboard, test fire alerts
-3. **Features:** Gate control, parking slots, email reports, chatbot
-
-![System Testing](docs/images/testing.jpg)
-
----
-
-**Course:** PHY00007 - IoT Systems  
-**Institution:** Vietnam National University, Ho Chi Minh City
